@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
-#include "constantes.h"
+#include "tolerance.h"
 #include "utilitaire.h"
 
 double util_distance (S2D a, S2D b)
