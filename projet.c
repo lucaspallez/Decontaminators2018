@@ -11,7 +11,7 @@
 void error(const char * file_name)
 {
 	//ouverture_fichier(file_name);
-	printf("error\n");
+	printf("error\n%s\n", file_name);
 
 }
 
@@ -26,9 +26,6 @@ void incorrect_argument(void)
 	//AFFICHER FICHIER BLANC (VOIR TEST.X)
 }
 
-
-
-
 int main(int argc, char **argv)
 {
 	if(argc == 3)
@@ -36,12 +33,13 @@ int main(int argc, char **argv)
 		const char * file_name = argv[2];
 		const char test_e[STRLEN_E] = {'E','r','r','o','r'};
 		const char test_d[STRLEN_D] = {'D','r','a','w'};
-		
-		int compteur = 0;
-		for(int i=0; i<strlen(argv[1]);i++)
-			if(strncmp(test_e[i],argv[1][i],strlen(argv[1])))
-				compteur++;
-		
+
+			if(strncmp(test_e,argv[1],strlen(argv[1])) == 0 && strlen(argv[1]) == STRLEN_E)
+				error(file_name);
+			else if(strncmp(test_d,argv[1],strlen(argv[1])) == 0 && strlen(argv[1]) == STRLEN_D)
+				draw();
+			else
+				incorrect_argument();
 		}
 	else
 		incorrect_argument();
