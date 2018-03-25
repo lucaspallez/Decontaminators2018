@@ -5,7 +5,7 @@ build: projet.x
 graphic.o : graphic.c graphic.h
 	gcc -Wall -lGL -c graphic.c -o graphic.o
 
-utilitaire.o : utilitaire.c utilitaire.h graphic.h
+utilitaire.o : utilitaire.c utilitaire.h graphic.h tolerance.h
 	gcc -Wall -lm -c utilitaire.c -o utilitaire.o
 
 error.o : error.c error.h
