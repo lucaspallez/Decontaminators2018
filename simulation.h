@@ -3,7 +3,7 @@
 #include "error.h"
 #include "utilitaire.h"
 #include "tolerance.h"
-int ouverture_fichier (const char file_name[]);
+int ouverture_fichier (const char *file_name);
 
 
 #endif

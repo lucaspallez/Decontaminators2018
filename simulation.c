@@ -6,16 +6,17 @@
 #include "simulation.h"
 #include "tolerance.h"
 
-static int nb_robots ,nb_particules; 
+static double nb_robots ,nb_particules; 
 
 //ouvrir le fichier
-int ouverture_fichier (const char file_name[])
+int ouverture_fichier (const char *file_name)
 {
 	FILE *fichier_initial; 
-	fichier_initial = fopen("file_name", "rb"); 
+	fichier_initial = fopen(file_name, "rb"); 
 	if (fichier_initial == NULL) 
 	{
 		error_file_missing (file_name);
+		return EXIT_FAILURE;
 	} 
 	
 	
@@ -28,21 +29,24 @@ int ouverture_fichier (const char file_name[])
 	double xr , yr , alpha;
 	double xp , yp , r , t;
 	char *debut;
+	int token, j= 0;
 	
 	
 	while (fgets(tab, 1000 ,fichier_initial)!= NULL )
 	{
+		printf( "%s " , tab); 
 		line_number++;
-		if((tab[0]=='#')||(tab[0]=='\n')) 
+		if((tab[0] =='#')||(tab[0] =='\n') ||(tab[2] =='#')) 
 		continue;
 		switch(etat)
 		{
-			case NBR : if (sscanf(tab , "%d" , &nb_robots)!= 1)
+			case NBR : if (sscanf(tab , "%lf" , &nb_robots)!= 1)
 						{
 							error_invalid_robot();
 							return EXIT_FAILURE;
 						}
-						if (nb_robots%1 != 0)
+						token = nb_robots;
+						if ( nb_robots != token)
 						{
 							error_invalid_nb_robots();
 							return EXIT_FAILURE;
@@ -52,11 +56,13 @@ int ouverture_fichier (const char file_name[])
 			break;
 			
 			case DONNEES_R : debut = tab;
-				while(debut)
-				{
-					if (sscanf (debut ,  "%lf" "%lf" "%lf" , &xr,&yr,&alpha) != 3 )
+				
+				
+ 					if (sscanf (debut ,  "%lf" "%lf" "%lf" , &xr,&yr,&alpha) != 3 )
 						{
-							error_fin_liste_robots(line_number);
+							printf( "%d " , sscanf (debut ,  "%lf" "%lf" "%lf" , &xr,&yr,&alpha));
+							printf ( "%lf " "%lf " "%lf "  , xr,yr,alpha);
+ 							error_fin_liste_robots(line_number);
 							return EXIT_FAILURE;
 						}
 						if (fabs(alpha)>M_PI)
@@ -64,9 +70,14 @@ int ouverture_fichier (const char file_name[])
 							error_invalid_robot_angle(alpha);
 							return EXIT_FAILURE;
 						}
-					debut=debut+3;
+					while (j != 3 || debut != NULL)
+					{	
+						debut = debut+1;
+						if (*debut != '\n' || *debut != ' ' || *debut != '\t')
+							j++; 
+					}
 					i++;
-				}
+				
 			
 			if(i == nb_robots)
 				etat = FIN_R;
@@ -81,12 +92,13 @@ int ouverture_fichier (const char file_name[])
 			etat = NBP;
 			break;
 			
-			case NBP : if(sscanf(tab , "%d" , &nb_particules)!= 1)
+			case NBP : if(sscanf(tab , "%lf" , &nb_particules)!= 1)
 						{
 							error_invalid_particule();
 							return EXIT_FAILURE;
 						}
-						if (nb_particules%1 != 0)
+						token = nb_particules;
+						if (nb_particules != token)
 						{
 							 error_invalid_nb_particules();
 							 return EXIT_FAILURE;
