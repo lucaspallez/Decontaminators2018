@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include "error.h"
 #include "utilitaire.h"
 #include "simulation.h"
@@ -9,11 +10,11 @@
 
 static double nb_robots ,nb_particules; 
 
-//ouvrir le fichier
+
 int ouverture_fichier (const char *file_name)
 {
 	FILE *fichier_initial; 
-	fichier_initial = fopen(file_name, "rb"); 
+	fichier_initial = fopen(file_name, "rt"); 
 	if (fichier_initial == NULL) 
 	{
 		error_file_missing (file_name);
@@ -25,20 +26,26 @@ int ouverture_fichier (const char *file_name)
 	int etat = NBR;
 	int line_number = 0;
 	int i;
-	//char fin[9] = {0};
-	char tab[1000];
+	char tab[MAX_LINE];
 	double xr , yr , alpha;
 	double xp , yp , r , t;
-	char *debut;
+	double token_xr = 25, token_yr = 25, token_alpha = 4;
+	double token_xp = 25 , token_yp = 25 , token_r = 5 , token_t = 2;
 	int token;
+	char *ret ;
+	ret = tab; 
+	int c = 0;
 	
-	
-	while (fgets(tab, 1000 ,fichier_initial)!= NULL )
+	while (fgets(tab, MAX_LINE ,fichier_initial)!= NULL)
 	{
-		printf( "%s " , tab); 
+		
+		
+		if((tab[0] =='#')||(tab[0] =='\n') || (tab[1] =='#')|| (tab[2] =='#' || (tab[4] =='#')))	
+			continue;
 		line_number++;
-		if((tab[0] =='#')||(tab[0] =='\n') || (tab[1] =='#') || (tab[2] =='#') || (tab[4] == '#'))
-		continue;
+		ret = tab; 
+		printf( "%s " , tab); 
+		
 		switch(etat)
 		{
 			case NBR : if (sscanf(tab , "%lf" , &nb_robots)!= 1)
@@ -56,33 +63,48 @@ int ouverture_fichier (const char *file_name)
 			etat = DONNEES_R; 
 			break;
 			
-			case DONNEES_R : debut = tab;
-				
-					//printf( "%d " , sscanf (debut ,  "%lf" "%lf" "%lf" , &xr,&yr,&alpha));
-					//printf ( "%lf " "%lf " "%lf "  , xr,yr,alpha);
-					if (sscanf (debut ,  "%lf" "%lf" "%lf" , &xr,&yr,&alpha) != 3 )
-						{
- 							error_fin_liste_robots(line_number);
-							return EXIT_FAILURE;
-						}
-					if (fabs(alpha)>M_PI)
-						{
-							error_invalid_robot_angle(alpha);
-							return EXIT_FAILURE;
-						}
-				
-					//~ while (j != 3 || *debut != '\n' )
-					//~ {	
-						//~ debut = debut+1;
-						//~ if (*debut != '\n' || *debut != ' ' || *debut != '\t')
-							//~ j++; 
-					//~ }
-					i++;
-					//printf ("%d" , i);
-				
+			case DONNEES_R :
+					
+					
+						 while( sscanf (ret , "%lf %lf %lf" , &xr,&yr,&alpha) == 3 )
+						 {
+							if ( fabs(alpha) > M_PI)
+							{
+								error_invalid_robot_angle(alpha);
+								return EXIT_FAILURE;
+							}
+							if ( xr != token_xr || yr != token_yr || alpha != token_alpha)
+							{
+								i++;
+							}
+							token_xr = xr;
+							token_yr = yr;
+							token_alpha = alpha;
+							 
+							ret = strchr ( ret , '\t');
+							if (ret == NULL)
+								break;
+							ret=ret +1;
+						 
+						 }
+						 
 			
-			if(i == nb_robots)
+			if (c >= i)
+			{
+				error_fin_liste_robots(line_number);
+				return EXIT_FAILURE;
+			}
+			c=i;
+		
+			if ( i > nb_robots)
+			{
+				error_missing_fin_liste_robots(line_number);
+				return EXIT_FAILURE;
+			}
+			
+			if( i == nb_robots)
 				etat = FIN_R;
+			
 			break;
 			
 			case FIN_R : if (*tab != 'F')
@@ -105,28 +127,51 @@ int ouverture_fichier (const char *file_name)
 							 error_invalid_nb_particules();
 							 return EXIT_FAILURE;
 						}
-			debut = tab;			
+			ret = tab;			
 			i=0;
+			c = 0;
 			etat = DONNEES_P ;
 			break;
 			
-			case DONNEES_P : debut = tab;
+			case DONNEES_P : 
+			
+						
+				while( sscanf (ret ,  "%lf %lf %lf %lf", &t , &r , &xp ,&yp) == 4 )
 				{
-					//printf( "%d " , sscanf (debut ,  "%lf" "%lf" "%lf" "%lf", &xp , &yp , &r ,&t));
-					if(sscanf (debut ,  "%lf" "%lf" "%lf" "%lf", &t , &r , &xp ,&yp) != 4)
+					if ( r > R_PARTICULE_MAX || r < R_PARTICULE_MIN || fabs(xp) > 20 || fabs(yp) > 20|| t > E_PARTICULE_MAX ) 
 					{
-						error_fin_liste_particules(line_number);
+						error_invalid_particule_value(t , r , xp ,yp);
 						return EXIT_FAILURE;
 					}
+					if ( xp != token_xp || yp != token_yp || r != token_r || t != token_t)
+					{
+						i++;
+					}
+					token_xp = xp;
+					token_yp = yp;
+					token_r = r;
+					token_t = t;
 					
-					if ( r < R_PARTICULE_MIN|| fabs(xp) > DMAX || fabs(yp) > DMAX ||  t > E_PARTICULE_MAX || t < 0 || r > R_PARTICULE_MAX)
-					{
-						error_invalid_particule_value(t , r , xp , yp);
-						return EXIT_FAILURE;
-					}
-					++i;
-					//debut = debut+4; 
+					ret = strchr ( ret , '\t');
+					if (ret == NULL)
+						break;
+						
+					ret=ret +1;
+				 }
+				if ( c >= i )
+				{
+					error_fin_liste_particules(line_number);
+					return EXIT_FAILURE;
 				}
+				c = i;
+				if ( i > nb_particules)
+				{
+					error_missing_fin_liste_particules(line_number);
+					return EXIT_FAILURE;
+				}
+				
+					
+			
 
 			if(i == nb_particules)
 				etat = FIN;
