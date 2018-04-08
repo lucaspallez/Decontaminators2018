@@ -154,7 +154,7 @@ int ouverture_fichier (const char *file_name)
 						
 				while( sscanf (ret ,  "%lf %lf %lf %lf", &t , &r , &xp ,&yp) == NBR_COORDONNEES_P )
 				{
-					if ( r > R_PARTICULE_MAX || r < R_PARTICULE_MIN || fabs(xp) > DMAX || fabs(yp) > DMAX|| t > E_PARTICULE_MAX ) 
+					if ( r > R_PARTICULE_MAX || r < R_PARTICULE_MIN || fabs(xp) > DMAX || fabs(yp) > DMAX|| t > E_PARTICULE_MAX || t < 0) 
 					{
 						error_invalid_particule_value(t , r , xp ,yp);
 						return EXIT_FAILURE;
