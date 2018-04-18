@@ -3,6 +3,8 @@
 #include "error.h"
 #include "utilitaire.h"
 #include "tolerance.h"
+#include "robot.h"
+#include "particule.h"
 #define INITIALISATION			0
 #define INIT_TOKEN_POS			25
 #define INIT_TOKEN_ALPHA		4
@@ -11,26 +13,9 @@
 #define NBR_COORDONNEES_R		3
 #define NBR_COORDONNEES_P		4
 
-typedef struct Robot STR_ROBOT;
-struct Robot
-{
-	double pos_x;
-	double pos_y;
-	double angle;
-};
 
-typedef struct Particule STR_PARTICULE;
-
-struct Particule
-{
-	double energie;
-	double rayon;
-	double pos_x;
-	double pos_y;
-};
-
-int ouverture_fichier (const char *file_name);
-
+int simulation_ouverture_fichier (const char *file_name);
+bool simulation_colision_robot_particule();
 
 
 #endif

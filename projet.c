@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-//#include "simulation.h"
-//#include "graphic.h"
+#include "simulation.h"
+#include "graphic.h"
 
 #define STRLEN_E			5
 #define STRLEN_D			4
@@ -10,8 +10,8 @@
 
 void error(const char * file_name)
 {
-	//ouverture_fichier(file_name);
-	printf("error\n%s\n", file_name);
+	simulation_ouverture_fichier(file_name);
+	//printf("error\n%s\n", file_name);
 
 }
 
