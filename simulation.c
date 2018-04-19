@@ -76,11 +76,11 @@ bool simulation_colision_robot_particule()
 	return 1;
 }
 
-double simulation_get_nb_robots (nb_robots)
+int simulation_get_nb_robots (nb_robots)
 {
 	return nb_robots;
 }
-double simulation_get_nb_particules (nb_particules)
+int simulation_get_nb_particules (nb_particules)
 {
 	return nb_particules;
 }
