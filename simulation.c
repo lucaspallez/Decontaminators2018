@@ -76,19 +76,19 @@ bool simulation_colision_robot_particule()
 	return 1;
 }
 
-int simulation_get_nb_robots ()
+int simulation_get_nb_robots()
 {
 	return nb_robots;
 }
-int simulation_get_nb_particules ()
+int simulation_get_nb_particules()
 {
 	return nb_particules;
 }
-double *simulation_get_robots ()
+double *simulation_get_robots()
 {
 	return pointer_r;
 }
-double *simulation_get_particules ()
+double *simulation_get_particules()
 {
 	return pointer_p;
 }
