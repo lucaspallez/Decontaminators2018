@@ -16,9 +16,9 @@
 
 int simulation_ouverture_fichier (const char *file_name);
 bool simulation_colision_robot_particule();
-int simulation_get_nb_robots (double nb_robots);
-int simulation_get_nb_particules (double nb_particules);
-double* simulation_get_robots (double*pointer_r);
-double* simulation_get_particules (double * pointer_p);
+int simulation_get_nb_robots();
+int simulation_get_nb_particules();
+double* simulation_get_robots();
+double* simulation_get_particules();
 
 #endif
