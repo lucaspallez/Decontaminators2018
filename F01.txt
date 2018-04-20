@@ -1,13 +1,13 @@
 # simple correct file / may have additional spaces
 
 # number of robots
-3.5		
+3		
 	 # robot 1
-	 0  0 0			
+	 1  2 3			
 	 # robot 2
-	 1  1 0	
+	 4  5 3	
 	 # robot 3
-	-1 -1 0			
+	 7  8 3			
 FIN_LISTE
 
 # number of particules
@@ -15,5 +15,5 @@ FIN_LISTE
     # particule 1		
 	1 2 -2  2	
 	# particule 2
-	1 2  2 -2		
+	1 2 -2  2		
 FIN_LISTE

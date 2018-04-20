@@ -10,7 +10,7 @@
 
 void error(const char * file_name)
 {
-	ouverture_fichier(file_name);
+	simulation_ouverture_fichier(file_name);
 	//printf("error\n%s\n", file_name);
 
 }
