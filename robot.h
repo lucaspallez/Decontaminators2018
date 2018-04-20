@@ -13,6 +13,8 @@
 #define INIT_TOKEN_ALPHA		4
 #define NBR_COORDONNEES_R		3
 #define NBR_COORDONNEES_P		4
+#define TRUE					1
+#define FALSE					0
 
 
 typedef struct Robot STR_ROBOT;

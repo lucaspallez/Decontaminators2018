@@ -15,7 +15,15 @@ static double *pointer_p;
 
 double * particule_lecture_fichier(const char *file_name)
 {
-	
+	enum etats {SEARCH , NBP , DONNEES_P, FIN};
+	int etat = SEARCH;
+	int line_number = INITIALISATION;
+	int compteur , k = INITIALISATION;
+	char tab[MAX_LINE];
+	double xp , yp , r , t;
+	int token = INITIALISATION;
+	char *ret ;
+	ret = tab;
 	FILE *fichier_initial; 
 	fichier_initial = fopen(file_name, "rt"); 
 	if (fichier_initial == NULL) 
@@ -23,52 +31,35 @@ double * particule_lecture_fichier(const char *file_name)
 		error_file_missing (file_name);
 		return NULL;
 	}
-	
-	enum etats {SEARCH , NBP , DONNEES_P, FIN};
-	int etat = SEARCH;
-	int line_number = INITIALISATION;
-	int i , k = 0 ;
-	char tab[MAX_LINE];
-	double xp , yp , r , t;
-	int token = INITIALISATION;
-	char *ret ;
-	ret = tab; 
-	
 	while (fgets(tab, MAX_LINE ,fichier_initial)!= NULL)
 	{
 		k=INITIALISATION;
 		line_number++;
-		
 		while (*(tab+k) == ' ' || *(tab+k) == '\t')
-		{
 			k++;
-		}
-		
-		if (*(tab+k) == '#' || *(tab+k) == '\n' || *(tab+k) == '\r')
+		if (*(tab+k)=='#'||*(tab+k)=='\n'||*(tab+k)=='\r')
 			continue;
 		ret = tab;
 		printf( "%s " , tab);
 		k=INITIALISATION;
-		
 		switch (etat)
 		{
 			case SEARCH : ret = strstr( tab , "FIN_LISTE");
 						if (ret != NULL)
 							etat = NBP;
 						break;
-							
+											
 			case NBP : if(sscanf(tab , "%lf" , &nb_particules)!= 1)
 						{
 							error_invalid_particule();
 							return NULL;
 						}
-						token = nb_particules;
-						if (nb_particules != token)
-						{
-							 error_invalid_nb_particules();
-							 return NULL;
-						}
-			
+			token = nb_particules;
+			if (nb_particules != token)
+			{
+				 error_invalid_nb_particules();
+				 return NULL;
+			}
 			pointer_p = malloc( nb_particules * sizeof(STR_PARTICULE)); 
 			if (nb_particules == 0)
 			{
@@ -76,74 +67,65 @@ double * particule_lecture_fichier(const char *file_name)
 				break;
 			}			
 			ret = tab;			
-			i= INITIALISATION;
+			compteur= INITIALISATION;
 			token = INITIALISATION;
 			etat = DONNEES_P ;
 			break;
-			
-			case DONNEES_P : while( *(tab + k) != '\n' && *(tab+k) != '\r')
-							{
-								if (sscanf (tab + k , "%lf %lf %lf %lf" , &t ,&r ,&xp, &yp) != 4)
-								 {
-									 break;
-								 }
-								 
-								if ( r > R_PARTICULE_MAX || r < R_PARTICULE_MIN || fabs(xp) > DMAX || fabs(yp) > DMAX|| t > E_PARTICULE_MAX || t < 0) 
-								{
-									error_invalid_particule_value(t , r , xp ,yp);
-									return NULL;
-									
-								}
-								
-								
-								
-									if ( i <= nb_particules)
-									{
-										*(pointer_p + (i*NBR_COORDONNEES_P)) = t;
-										*(pointer_p + ((i*NBR_COORDONNEES_P) + 1)) = r;
-										*(pointer_p + ((i*NBR_COORDONNEES_P) + 2)) = xp;
-										*(pointer_p + ((i*NBR_COORDONNEES_P) + 3)) = yp;
-									}
-																		
-									i++;
-									k = particule_avancement(k, tab);
-							}
-			
-			
-			if ( token >= i )
+			case DONNEES_P : 
+			while( *(tab + k) != '\n' && *(tab+k) != '\r')
+			{
+				if (sscanf(tab+k,"%lf %lf %lf %lf",&t,&r,&xp,&yp)
+													!=NBR_COORDONNEES_P)
+					 break;
+				if (r > R_PARTICULE_MAX || r < R_PARTICULE_MIN ||
+					fabs(xp) > DMAX || fabs(yp) > DMAX||
+					t > E_PARTICULE_MAX || t < 0) 
+				{
+					error_invalid_particule_value(t , r , xp ,yp);
+					return NULL;
+				}
+					if ( compteur <= nb_particules)
+					{
+						*(pointer_p+(compteur*NBR_COORDONNEES_P))=t;
+						*(pointer_p+((compteur*NBR_COORDONNEES_P)+1))
+																	 =r;
+						*(pointer_p+((compteur*NBR_COORDONNEES_P)+2))
+																	=xp;
+						*(pointer_p+((compteur*NBR_COORDONNEES_P)+3))
+																	=yp;
+					}									
+					compteur++;
+					k = particule_avancement(k, tab);
+			}
+			if (token >= compteur)
 			{
 				error_fin_liste_particules(line_number);
 				return NULL;
 			}
-			token = i;
-			if ( i > nb_particules)
+			token = compteur;
+			if ( compteur > nb_particules)
 			{
-				error_missing_fin_liste_particules(line_number + 1);
+				error_missing_fin_liste_particules(line_number+1);
 				return NULL;
 			}
 
-			if(i == nb_particules)
+			if(compteur == nb_particules)
 				etat = FIN;
 			break;
-			
 			case FIN : 
-			if (sscanf(tab , "%lf %lf %lf %lf" , &t ,&r ,&xp, &yp) == NBR_COORDONNEES_P )
-						{
-							error_missing_fin_liste_particules(line_number);
-							return NULL;
-						}
+			if(sscanf(tab,"%lf %lf %lf %lf",&t,&r,&xp,&yp)
+													==NBR_COORDONNEES_P)
+			{
+				error_missing_fin_liste_particules(line_number);
+				return NULL;
+			}
 			break;
-				
-			
 		}
 	}
-	
 	if (particule_collision())
 		return NULL;
-	
 	fclose(fichier_initial);
-	return pointer_p;		
-		
+	return pointer_p;	
 }
 
 double particule_nombre_particules()
@@ -156,13 +138,13 @@ int particule_avancement(int k, char * tab)
 	int compteur= INITIALISATION;
 	int token = INITIALISATION;
 	
-	while( compteur <= NBR_COORDONNEES_P && *(tab + k) != '\n' && *(tab+k) != '\r')
+	while(compteur<=NBR_COORDONNEES_P&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
 		if (token != compteur || *(tab+k) == '.')
-			while (*(tab+k) != '\t' && *(tab+k) != ' ' && *(tab+k) != '\n' && *(tab+k) != '\r')
+			while(*(tab+k)!='\t'&&*(tab+k)!=' '&&
+				  *(tab+k)!='\n'&&*(tab+k)!='\r')
 				k++;
 		token = compteur;
-
 		if (*(tab+k) == '\t' || *(tab+k) == ' ')
 			k++;
 		else
@@ -197,7 +179,6 @@ bool particule_collision()
 			
 			double dist_x = fabs(x2-x1);
 			double dist_y = fabs (y2-y1);
-
 			if ( sqrt( dist_x*dist_x + dist_y*dist_y) < r1+r2)
 			{
 				error_collision(PARTICULE_PARTICULE, j+1 , j+k+1);
