@@ -6,12 +6,11 @@
 #include "error.h"
 #include "utilitaire.h"
 #include "particule.h"
-#include "tolerance.h"
 #include "constantes.h"
 
 static double nb_particules;
 static double *pointer_p;
-
+static STR_PARTICULE **particule;
 
 double * particule_lecture_fichier(const char *file_name)
 {
@@ -40,20 +39,21 @@ double * particule_lecture_fichier(const char *file_name)
 		if (*(tab+k)=='#'||*(tab+k)=='\n'||*(tab+k)=='\r')
 			continue;
 		ret = tab;
-		printf( "%s " , tab);
 		k=INITIALISATION;
 		switch (etat)
 		{
-			case SEARCH : ret = strstr( tab , "FIN_LISTE");
-						if (ret != NULL)
-							etat = NBP;
-						break;
+			case SEARCH : 
+				ret = strstr( tab , "FIN_LISTE");
+				if (ret != NULL)
+					etat = NBP;
+				break;
 											
-			case NBP : if(sscanf(tab , "%lf" , &nb_particules)!= 1)
-						{
-							error_invalid_particule();
-							return NULL;
-						}
+			case NBP :
+				if(sscanf(tab , "%lf" , &nb_particules)!= 1)
+				{
+					error_invalid_particule();
+					return NULL;
+			    }
 			token = nb_particules;
 			if (nb_particules != token)
 			{
@@ -75,7 +75,7 @@ double * particule_lecture_fichier(const char *file_name)
 			while( *(tab + k) != '\n' && *(tab+k) != '\r')
 			{
 				if (sscanf(tab+k,"%lf %lf %lf %lf",&t,&r,&xp,&yp)
-													!=NBR_COORDONNEES_P)
+					!= NBR_COORDONNEES_P)
 					 break;
 				if (r > R_PARTICULE_MAX || r < R_PARTICULE_MIN ||
 					fabs(xp) > DMAX || fabs(yp) > DMAX||
@@ -84,18 +84,15 @@ double * particule_lecture_fichier(const char *file_name)
 					error_invalid_particule_value(t , r , xp ,yp);
 					return NULL;
 				}
-					if ( compteur <= nb_particules)
-					{
-						*(pointer_p+(compteur*NBR_COORDONNEES_P))=t;
-						*(pointer_p+((compteur*NBR_COORDONNEES_P)+1))
-																	 =r;
-						*(pointer_p+((compteur*NBR_COORDONNEES_P)+2))
-																	=xp;
-						*(pointer_p+((compteur*NBR_COORDONNEES_P)+3))
-																	=yp;
-					}									
-					compteur++;
-					k = particule_avancement(k, tab);
+				if ( compteur <= nb_particules)
+				{
+					*(pointer_p+(compteur*NBR_COORDONNEES_P)) =t;
+					*(pointer_p+((compteur*NBR_COORDONNEES_P)+1)) =r;
+					*(pointer_p+((compteur*NBR_COORDONNEES_P)+2)) =xp;
+					*(pointer_p+((compteur*NBR_COORDONNEES_P)+3)) =yp;
+				}									
+				compteur++;
+				k = particule_avancement(k, tab);
 			}
 			if (token >= compteur)
 			{
@@ -113,8 +110,7 @@ double * particule_lecture_fichier(const char *file_name)
 				etat = FIN;
 			break;
 			case FIN : 
-			if(sscanf(tab,"%lf %lf %lf %lf",&t,&r,&xp,&yp)
-													==NBR_COORDONNEES_P)
+			if(sscanf(tab,"%lf %lf %lf %lf",&t,&r,&xp,&yp) == NBR_COORDONNEES_P)
 			{
 				error_missing_fin_liste_particules(line_number);
 				return NULL;
@@ -141,8 +137,7 @@ int particule_avancement(int k, char * tab)
 	while(compteur<=NBR_COORDONNEES_P&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
 		if (token != compteur || *(tab+k) == '.')
-			while(*(tab+k)!='\t'&&*(tab+k)!=' '&&
-				  *(tab+k)!='\n'&&*(tab+k)!='\r')
+			while(*(tab+k)!='\t'&&*(tab+k)!=' '&& *(tab+k)!='\n'&&*(tab+k)!='\r')
 				k++;
 		token = compteur;
 		if (*(tab+k) == '\t' || *(tab+k) == ' ')
@@ -187,4 +182,45 @@ bool particule_collision()
 		}
 	}
 	return 0;
+}
+
+void donnees_particules()
+{
+	particule = malloc(nb_particules*sizeof(STR_PARTICULE));
+	for (int y = 0 ; y < nb_particules ; y++)
+	{
+		particule[y] = malloc(sizeof(STR_PARTICULE));
+	}
+	for (int z = 0 ; z< nb_particules ; z++)
+	{
+		particule[z]->energie = *(pointer_p+(z*NBR_COORDONNEES_P));
+		particule[z]->rayon = *(pointer_p+((z*NBR_COORDONNEES_P)+1));
+		particule[z]->pos_x = *(pointer_p+((z*NBR_COORDONNEES_P)+2));
+		particule[z]->pos_y = *(pointer_p+((z*NBR_COORDONNEES_P)+3));	
+	}
+}
+
+void decomposition(int i)
+{	
+	if ((particule[i]->rayon)*R_PARTICULE_FACTOR > R_PARTICULE_MIN)
+	{
+		for (int j = 0 ; j < 4 ; j++)
+		{
+			int k=nb_particules;
+			nb_particules++;
+			particule = realloc(particule, nb_particules*sizeof(STR_PARTICULE));
+			particule[k]=malloc(sizeof(STR_PARTICULE));
+			particule[k]->rayon = (particule[i]->rayon)*R_PARTICULE_FACTOR;
+			particule[k]->energie = particule[i]->energie*E_PARTICULE_FACTOR;
+			if (j == 0 || j == 1)
+				particule[k]->pos_x = (particule[i]->pos_x+particule[k]->rayon);
+			else
+				particule[k]->pos_x = (particule[i]->pos_x-particule[k]->rayon);
+			if (j == 0 || j == 3)
+				particule[k]->pos_y = (particule[i]->pos_y+particule[k]->rayon);
+			else
+				particule[k]->pos_y = (particule[i]->pos_y-particule[k]->rayon);
+		}
+		
+	}
 }

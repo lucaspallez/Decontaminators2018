@@ -1,3 +1,15 @@
+/*!
+ \file error.h
+ \brief Module qui gère les messages d'erreur. 
+        -> Ne pas modifier les fonctions fournies
+        -> Utiliser les fonctions indiquées pour chaque fichier de test
+           pour l'affichage du message d'erreur (Table1 dans Rendu2_V1.0.pdf)
+        -> Vous pouvez ajouter vos propres fonctions
+ \author PROG II
+ \version 1.02
+ \date 23 mars 2018
+ */
+ 
 #ifndef ERROR_H
 #define ERROR_H
 
@@ -79,7 +91,8 @@ void error_missing_fin_liste_particules(unsigned int line_number);
 
 /**
  * \brief	at least one useless char has been encountered
- * \param	line_numer	line number of this useless char	
+ * 			the expected number of data is wrong
+ * \param	line_number	line number of this useless char	
 */
 void error_useless_char(unsigned int line_number);
 
@@ -93,5 +106,12 @@ void error_useless_char(unsigned int line_number);
  */
 void error_collision(ERROR_COLLISION type, 
 				     unsigned int id1, unsigned int id2);
+
+/**
+ * \brief	detecting the end of the file despite the file analysis
+ * 			is still on-going => we have not yet reached the final state
+ * \param	line_number	line number of the last line read in the file	
+*/
+void error_end_of_file(unsigned int line_number);
 
 #endif

@@ -2,7 +2,7 @@
 #define SIMULATION_H
 #include "error.h"
 #include "utilitaire.h"
-#include "tolerance.h"
+#include "constantes.h"
 #include "robot.h"
 #include "particule.h"
 #define INITIALISATION			0

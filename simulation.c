@@ -6,7 +6,6 @@
 #include "error.h"
 #include "utilitaire.h"
 #include "simulation.h"
-#include "tolerance.h"
 #include "constantes.h"
 #include "robot.h"
 #include "particule.h"
@@ -18,16 +17,15 @@ static double nb_robots, nb_particules;
 
 int simulation_ouverture_fichier (const char *file_name)
 {
-	
 	pointer_r = robot_lecture_fichier(file_name);
 	if (pointer_r == NULL)
 	{
 		free(pointer_r);
 		return EXIT_FAILURE;
-		
 	}
 	 	
 	pointer_p = particule_lecture_fichier(file_name);
+	donnees_particules();
 	if (pointer_p == NULL)
 	{
 		free(pointer_p);
@@ -43,8 +41,8 @@ int simulation_ouverture_fichier (const char *file_name)
 		free(pointer_r);
 		return EXIT_FAILURE;
 	}
+	decomposition(0);
 	error_no_error_in_this_file();
-	
 	return EXIT_SUCCESS;
 }
 
@@ -57,7 +55,6 @@ bool simulation_colision_robot_particule()
 	{
 		for (int k = 0 ; k < nb_particules ; k++)
 		{
-		
 			x1 = *(pointer_r + (j * NBR_COORDONNEES_R));
 			y1 = *(pointer_r + (j * NBR_COORDONNEES_R) + 1);
 			r1 = *(pointer_p + (NBR_COORDONNEES_P*k) + 1);
@@ -67,7 +64,7 @@ bool simulation_colision_robot_particule()
 			dist_x = fabs(x2-x1);
 			dist_y = fabs(y2-y1);
 	
-			if ( sqrt( dist_x*dist_x + dist_y*dist_y) < r1+R_ROBOT)
+			if( sqrt( dist_x*dist_x + dist_y*dist_y) < r1+R_ROBOT)
 			{
 				error_collision(ROBOT_PARTICULE, j+1 , k+1);
 				return 0;

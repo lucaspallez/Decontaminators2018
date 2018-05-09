@@ -1,3 +1,15 @@
+/*!
+ \file error.c
+ \brief Module qui gère les messages d'erreur. 
+        -> Ne pas modifier les fonctions fournies
+        -> Utiliser les fonctions indiquées pour chaque fichier de test
+           pour l'affichage du message d'erreur (Table1 dans Rendu2_V1.0.pdf)
+        -> Vous pouvez ajouter vos propres fonctions
+ \author PROG II
+ \version 1.02
+ \date 23 mars 2018
+ */
+
 #include <stdio.h>
 #include <math.h>
 
@@ -103,4 +115,9 @@ void error_collision(ERROR_COLLISION type,
 	
 	printf("There is a %s collision between:\n", types[type]);
 	printf("%s %d and %s %d\n", name_col[0], id1, name_col[1], id2);
+}
+
+void error_end_of_file(unsigned int line_number)
+{
+	printf("Error - Unexpected End-Of-File after line %u\n", line_number);
 }

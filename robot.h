@@ -6,15 +6,12 @@
 #include <string.h>
 #include "error.h"
 #include "utilitaire.h"
-#include "tolerance.h"
 #include "constantes.h"
 #define INITIALISATION			0
 #define INIT_TOKEN_POS			25
 #define INIT_TOKEN_ALPHA		4
 #define NBR_COORDONNEES_R		3
 #define NBR_COORDONNEES_P		4
-#define TRUE					1
-#define FALSE					0
 
 
 typedef struct Robot STR_ROBOT;

@@ -6,7 +6,6 @@
 #include "error.h"
 #include "utilitaire.h"
 #include "robot.h"
-#include "tolerance.h"
 #include "constantes.h"
 
 static double nb_robots = INITIALISATION;
@@ -37,77 +36,76 @@ double * robot_lecture_fichier(const char *file_name)
 			k++;
 		if (*(tab+k) == '#' || *(tab+k) == '\n' || *(tab+k) == '\r')
 			continue;	
-		printf( "%s " , tab);
 		k=INITIALISATION;
 		switch(etat)
 		{
-			case NBR : if (sscanf(tab , "%lf" , &nb_robots)!= 1)
-						{
-							error_invalid_robot();
-							return NULL;
-						}
-						token = nb_robots;
-			if ( nb_robots != token)
-			{
-				error_invalid_nb_robots();
-				return NULL;
-			}
-			pointer_r = malloc( nb_robots * sizeof(STR_ROBOT)); 	
-			if ( nb_robots == 0 )
-			{
-				etat = PARTICULE;
+			case NBR : 
+				if (sscanf(tab , "%lf" , &nb_robots)!= 1)
+				{
+					error_invalid_robot();
+					return NULL;
+				}
+				token = nb_robots;
+				if ( nb_robots != token)
+				{
+					error_invalid_nb_robots();
+					return NULL;
+				}
+				pointer_r = malloc( nb_robots * sizeof(STR_ROBOT)); 	
+				if ( nb_robots == 0 )
+				{
+					etat = PARTICULE;
+					break;
+				}					
+				i= INITIALISATION;
+				token = INITIALISATION;
+				etat = DONNEES_R; 
 				break;
-			}					
-			i= INITIALISATION;
-			token = INITIALISATION;
-			etat = DONNEES_R; 
-			break;
 			
 			case DONNEES_R :  
-			while( *(tab + k) != '\n' && *(tab+k) != '\r')
-			{
-				 if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha) 
-												   != NBR_COORDONNEES_R)
-					break;
-				 if ( fabs(alpha) > M_PI)
-				 {
-					error_invalid_robot_angle(alpha);
-					return NULL;
-				 }	
-				 if ( i <= nb_robots )
-				 {
-					*(pointer_r + (i*NBR_COORDONNEES_R)) = xr;
-					*(pointer_r + ((i*NBR_COORDONNEES_R) + 1)) = yr;
-					*(pointer_r + ((i*NBR_COORDONNEES_R) + 2)) = alpha;
-				 }									
+				while( *(tab + k) != '\n' && *(tab+k) != '\r')
+				{
+					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!= NBR_COORDONNEES_R)
+						break;
+					if(fabs(alpha) > M_PI)
+					{
+						error_invalid_robot_angle(alpha);
+						return NULL;
+					}	
+					if ( i <= nb_robots )
+					{
+						*(pointer_r + (i*NBR_COORDONNEES_R)) = xr;
+						*(pointer_r + ((i*NBR_COORDONNEES_R) + 1)) = yr;
+						*(pointer_r + ((i*NBR_COORDONNEES_R) + 2)) = alpha;
+					}									
 					i++;
 					k = robot_avancement(k, tab);		
-			}
-			if (token >= i)
-			{
-				error_fin_liste_robots(line_number);
-				return NULL;
-			}
-			token=i;
-			if ( i > nb_robots)
-			{
-				error_missing_fin_liste_robots(line_number +1);
-				return NULL;
-			}
-			if( i == nb_robots)
-				etat = FIN_R;
-			break;
+				}
+				if (token >= i)
+				{
+					error_fin_liste_robots(line_number);
+					return NULL;
+				}
+				token=i;
+				if ( i > nb_robots)
+				{
+					error_missing_fin_liste_robots(line_number +1);
+					return NULL;
+				}
+				if( i == nb_robots)
+					etat = FIN_R;
+				break;
 			
 			case FIN_R : 
-			if(sscanf(tab,"%lf %lf %lf",&xr,&yr,&alpha)
-													==NBR_COORDONNEES_R)
-			{
-				error_missing_fin_liste_robots(line_number);
-				return NULL;
-			}
-			etat = PARTICULE;
+				if(sscanf(tab,"%lf %lf %lf",&xr,&yr,&alpha) == NBR_COORDONNEES_R)
+				{
+					error_missing_fin_liste_robots(line_number);
+					return NULL;
+				}
+				etat = PARTICULE;
 			
-			case PARTICULE : break;
+			case PARTICULE : 
+				break;
 		}
 	}
 	if (robot_collision())
@@ -127,12 +125,11 @@ int robot_avancement(int k, char *tab)
 	int token = INITIALISATION;
 	while(compteur<=NBR_COORDONNEES_R&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
-		if (token != compteur || *(tab+k) == '.')
-			while (*(tab+k)!='\t'&&*(tab+k)!=' '&&*(tab+k)!='\n'
-													   &&*(tab+k)!='\r')
+		if(token != compteur || *(tab+k) == '.')
+			while (*(tab+k)!='\t'&&*(tab+k)!=' '&&*(tab+k)!='\n' &&*(tab+k)!='\r')
 				k++;
 		token = compteur;
-		if (*(tab+k) == '\t' || *(tab+k) == ' ')
+		if(*(tab+k) == '\t' || *(tab+k) == ' ')
 			k++;
 		else
 		{
@@ -160,21 +157,20 @@ bool robot_collision()
 			double dist_y;
 
 			x1 = *(pointer_r+ (j * NBR_COORDONNEES_R) );
-			y1 = *(pointer_r+(j* NBR_COORDONNEES_R) + 1);
+			y1 = *(pointer_r+ (j* NBR_COORDONNEES_R) + 1);
 			x2 = *(pointer_r+ NBR_COORDONNEES_R*(j+k));
-			y2 = *(pointer_r+ NBR_COORDONNEES_R*(j+k) +1 );
+			y2 = *(pointer_r+ NBR_COORDONNEES_R*(j+k) + 1);
 			
 			dist_x = fabs(x2-x1);
 			dist_y = fabs(y2-y1);
 			if ( sqrt( dist_x*dist_x + dist_y*dist_y) < 2*R_ROBOT)
 			{
 				error_collision(ROBOT_ROBOT, j+1 , j+k+1);
-				return TRUE;
+				return 1;
 			}
 		}
-		
 	}
-	return FALSE;
+	return 0;
 }
 
 
