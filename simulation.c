@@ -14,20 +14,26 @@
 static double * pointer_r;
 static double * pointer_p;
 static double nb_robots, nb_particules;
+static STR_PARTICULE** particule;
+static STR_ROBOT ** robot;
 
 int simulation_ouverture_fichier (const char *file_name)
 {
 	pointer_r = robot_lecture_fichier(file_name);
+	robot = robot_donnees();
 	if (pointer_r == NULL)
 	{
+		robot_free_robots();
 		free(pointer_r);
 		return EXIT_FAILURE;
 	}
 	 	
 	pointer_p = particule_lecture_fichier(file_name);
-	donnees_particules();
+	particule = particule_donnees();
 	if (pointer_p == NULL)
 	{
+		particule_free_particules();
+		robot_free_robots();
 		free(pointer_p);
 		free(pointer_r);
 		return EXIT_FAILURE;
@@ -37,12 +43,15 @@ int simulation_ouverture_fichier (const char *file_name)
 		
 	if (simulation_colision_robot_particule() == 0)
 	{
+		robot_free_robots();
+		particule_free_particules();
 		free(pointer_p);
 		free(pointer_r);
 		return EXIT_FAILURE;
 	}
-	decomposition(0);
 	error_no_error_in_this_file();
+	free(pointer_p);
+	free(pointer_r);
 	return EXIT_SUCCESS;
 }
 
@@ -82,11 +91,11 @@ int simulation_get_nb_particules()
 {
 	return nb_particules;
 }
-double *simulation_get_robots()
+STR_ROBOT **simulation_get_robots()
 {
-	return pointer_r;
+	return robot;
 }
-double *simulation_get_particules()
+STR_PARTICULE **simulation_get_particules()
 {
-	return pointer_p;
+	return particule;
 }

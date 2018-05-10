@@ -28,5 +28,7 @@ double * robot_lecture_fichier(const char *fichier);
 double robot_nombre_robots();
 int robot_avancement(int k, char *tab);
 bool robot_collision();
+STR_ROBOT** robot_donnees();
+void robot_free_robots();
 
 #endif

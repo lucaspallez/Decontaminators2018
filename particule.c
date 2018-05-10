@@ -184,7 +184,7 @@ bool particule_collision()
 	return 0;
 }
 
-void donnees_particules()
+STR_PARTICULE** particule_donnees()
 {
 	particule = malloc(nb_particules*sizeof(STR_PARTICULE));
 	for (int y = 0 ; y < nb_particules ; y++)
@@ -198,9 +198,10 @@ void donnees_particules()
 		particule[z]->pos_x = *(pointer_p+((z*NBR_COORDONNEES_P)+2));
 		particule[z]->pos_y = *(pointer_p+((z*NBR_COORDONNEES_P)+3));	
 	}
+	return particule;
 }
 
-void decomposition(int i)
+STR_PARTICULE** particule_decomposition(int i)
 {	
 	if ((particule[i]->rayon)*R_PARTICULE_FACTOR > R_PARTICULE_MIN)
 	{
@@ -223,4 +224,15 @@ void decomposition(int i)
 		}
 		
 	}
+	return particule;
+}
+
+
+void particule_free_particules()
+{
+	for (int i=0 ; i< nb_particules ; i++)
+	{
+		free(particule[i]);
+	}
+	free(particule);
 }

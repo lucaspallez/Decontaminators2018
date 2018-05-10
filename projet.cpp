@@ -32,7 +32,8 @@ namespace
 	int main_window, turn = 0, recording, control_type, control, fichier_lu = NON_LU;
 	int nb_robots, nb_particules, ind_robot, ind_particule;
 	double rate = 0., v_trans = 0., v_rot = 0.;
-	double *robot, *particule;
+	STR_ROBOT **robot;
+	STR_PARTICULE ** particule;
 	
 	GLfloat aspect_ratio;
 	GLUI_Button *exit_button, *open_button, *save_button;

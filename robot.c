@@ -10,6 +10,7 @@
 
 static double nb_robots = INITIALISATION;
 static double *pointer_r; 
+static STR_ROBOT **robot;
 
 double * robot_lecture_fichier(const char *file_name)
 {
@@ -171,6 +172,32 @@ bool robot_collision()
 		}
 	}
 	return 0;
+}
+
+STR_ROBOT** robot_donnees()
+{
+	robot = malloc(nb_robots*sizeof(STR_ROBOT));
+	for (int y = 0 ; y < nb_robots ; y++)
+	{
+		robot[y] = malloc(sizeof(STR_ROBOT));
+	}
+	for (int z = 0 ; z< nb_robots ; z++)
+	{
+		robot[z]->pos_x = *(pointer_r+(z*NBR_COORDONNEES_R));
+		robot[z]->pos_y = *(pointer_r+((z*NBR_COORDONNEES_R)+1));
+		robot[z]->angle = *(pointer_r+((z*NBR_COORDONNEES_R)+2));
+	}
+	
+	return robot;
+}
+
+void robot_free_robots()
+{
+	for (int i=0 ; i< nb_robots ; i++)
+	{
+		free(robot[i]);
+	}
+	free(robot);
 }
 
 

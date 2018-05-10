@@ -28,7 +28,8 @@ double *particule_lecture_fichier(const char *fichier);
 double particule_nombre_particules();
 int particule_avancement(int k, char*tab);
 bool particule_collision();
-void donnees_particules();
-void decomposition(int i);
+STR_PARTICULE** particule_donnees();
+STR_PARTICULE** particule_decomposition(int i);
+void particule_free_particules();
 
 #endif
