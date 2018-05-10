@@ -30,7 +30,7 @@ namespace
 	char save_name[STR_MAX] = "save.txt";
 	char file_name[STR_MAX] = "";
 	int main_window, turn = 0, recording, control_type, control, fichier_lu = NON_LU;
-	int nb_robots, nb_particules, ind_robot, ind_particule;
+	int nb_robots, nb_particules;
 	double rate = 0., v_trans = 0., v_rot = 0.;
 	STR_ROBOT **robot;
 	STR_PARTICULE ** particule;
@@ -72,12 +72,11 @@ void affichage(void)
 		//ROBOTS
 		for(int i = 0; i < nb_robots; i++)
 		{
-			ind_robot = i*NBR_COORDONNEES_R;
 			float black[3] = {0.0,0.0,0.0};
 			float red[3] = {1.0,0.0,0.0};
-			double x_c = robot[ind_robot + RBT_XC];
-			double y_c = robot[ind_robot + RBT_YC];
-			double angle = robot[ind_robot + RBT_ANGLE];
+			double x_c = robot[i]->pos_x;
+			double y_c = robot[i]->pos_y;
+			double angle = robot[i]->angle;
 			graphic_set_color3fv(black);
 			graphic_set_line_width(2.0);
 			graphic_draw_circle (x_c, y_c, R_ROBOT, GRAPHIC_EMPTY);
@@ -90,10 +89,9 @@ void affichage(void)
 		//PARTICULES
 		for(int i = 0; i < nb_particules; i++)
 		{
-			ind_particule = i*NBR_COORDONNEES_P;
-			double x_c = particule[ind_particule + PRTCL_XC];
-			double y_c = particule[ind_particule + PRTCL_YC];
-			double radius = particule[ind_particule + PRTCL_R];
+			double x_c = particule[i]->pos_x;
+			double y_c = particule[i]->pos_y;
+			double radius = particule[i]->rayon;
 			float gray[3] = {0.7, 0.7,0.7};
 			graphic_set_color3fv(gray);
 			graphic_draw_circle(x_c, y_c, radius, GRAPHIC_FILLED);
@@ -127,18 +125,16 @@ void save_CB(int control)
 	fprintf(save_ptr, "%d\n", nb_robots);
 	for(int i = 0; i<nb_robots; i++)
 	{
-		ind_robot = i*NBR_COORDONNEES_R;
-		fprintf(save_ptr, "%lf %lf %lf\n", robot[ind_robot + RBT_XC], 
-				robot[ind_robot + RBT_YC], robot[ind_robot + RBT_ANGLE]);
+		fprintf(save_ptr, "%lf %lf %lf\n", robot[i]->pos_x, 
+				robot[i]->pos_y, robot[i]->angle);
 	}
 	fprintf(save_ptr, "FIN_LISTE\n\n%d\n", nb_particules);
 	for(int i = 0; i<nb_particules; i++)
 	{
-		ind_particule = i*NBR_COORDONNEES_P;
-		fprintf(save_ptr,"%lf %lf %lf %lf\n", particule[ind_particule + PRTCL_E],
-				particule[ind_particule + PRTCL_R], 
-				particule[ind_particule + PRTCL_XC],
-				particule[ind_particule + PRTCL_YC]);
+		fprintf(save_ptr,"%lf %lf %lf %lf\n", particule[i]->energie,
+				particule[i]->rayon, 
+				particule[i]->pos_x,
+				particule[i]->pos_y);
 	}
 	fprintf(save_ptr, "FIN_LISTE\n");
 	fclose(save_ptr);
