@@ -10,8 +10,8 @@
 #define INITIALISATION			0
 #define INIT_TOKEN_POS			25
 #define INIT_TOKEN_ALPHA		4
-#define NBR_COORDONNEES_R		3
-#define NBR_COORDONNEES_P		4
+#define NBR_COORDONNEES_R		4
+#define LIBRE					-1
 
 
 typedef struct Robot STR_ROBOT;
@@ -20,6 +20,7 @@ struct Robot
 	double pos_x;
 	double pos_y;
 	double angle;
+	int occup;
 };
 
 

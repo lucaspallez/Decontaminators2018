@@ -52,6 +52,7 @@ int simulation_ouverture_fichier (const char *file_name)
 	error_no_error_in_this_file();
 	free(pointer_p);
 	free(pointer_r);
+	particule_tri();
 	return EXIT_SUCCESS;
 }
 
@@ -81,6 +82,108 @@ bool simulation_colision_robot_particule()
 		}
 	}
 	return 1;
+}
+
+void simulation_boucle()
+{
+	double*delta_gamma=NULL;
+	double vrot, vtrans;
+	for(int i = 0; i < nb_particules ; i++)
+	{
+		if (rand()/RAND_MAX <= DECOMPOSITION_RATE)
+		{
+			particule_decomposition(i);
+		}
+	}
+	particule_tri();
+	
+	for (int i=0 ; i < nb_robots ; i++)
+	{
+		S2D rob;
+		rob.x = robot[i]->pos_x;
+		rob.y = robot[i]->pos_y;
+		int k = simulation_robot_colision_boucle(i); 
+		
+		if ( k != -1)
+		{
+			robot[i]->occup = k;
+			S2D part;
+			part.x = particule[k]->pos_x;
+			part.y = particule[k]->pos_y;
+			if(!util_alignement(rob,robot[i]->angle,part))
+			{
+				util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
+				vrot = *(delta_gamma) / DELTA_T;
+				if (fabs(vrot) > VROT_MAX)
+				{
+					if(vrot > 0)
+						vrot = VROT_MAX;
+					else
+						vrot = -VROT_MAX;
+				}
+				robot[i]->angle = robot[i]->angle + vrot*DELTA_T;
+			}
+			else
+			{
+				robot[i]->occup=LIBRE;
+				nb_particules--;
+				free(particule[k]);
+				particule = realloc (particule,nb_particules*sizeof(STR_PARTICULE));
+			}
+		}
+		else
+		{
+			if (robot[i]->occup != LIBRE)
+			{
+				S2D part;
+				part.x = particule[robot[i]->occup]->pos_x;
+				part.y = particule[robot[i]->occup]->pos_y;
+				if(!util_alignement(rob,robot[i]->angle,part))
+				{
+				}
+				else
+				{
+					vtrans = VTRAN_MAX;
+					rob = util_deplacement(rob, robot[i]->angle, vtrans*DELTA_T);
+					robot[i]->pos_x=rob.x;
+					robot[i]->pos_y=rob.y;
+				}
+			}
+			else
+			{
+				//tu t'occuppes
+				//regarde si aligné
+					//si oui : avance
+					//si non : tourne
+			}
+		}
+		
+	}
+ 
+}
+
+int simulation_robot_colision_boucle(int i)
+{
+	double x1, x2, y1, y2, r1;
+ 	double dist_x ,dist_y ;
+
+		for (int k = 0 ; k < nb_particules ; k++)
+		{
+			x1 = robot[i]->pos_x;
+			y1 = robot[i]->pos_y;
+			r1 = particule[k]->rayon;
+			x2 = particule[k]->pos_x;
+			y2 = particule[k]->pos_y;
+			
+			dist_x = fabs(x2-x1);
+			dist_y = fabs(y2-y1);
+	
+			if( sqrt( dist_x*dist_x + dist_y*dist_y) <= r1+R_ROBOT)
+			{
+				return k;
+			}
+		}
+	return -1;
 }
 
 int simulation_get_nb_robots()

@@ -31,5 +31,5 @@ bool particule_collision();
 STR_PARTICULE** particule_donnees();
 STR_PARTICULE** particule_decomposition(int i);
 void particule_free_particules();
-
+void particule_tri();
 #endif

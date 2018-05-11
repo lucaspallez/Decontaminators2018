@@ -222,6 +222,9 @@ STR_PARTICULE** particule_decomposition(int i)
 			else
 				particule[k]->pos_y = (particule[i]->pos_y-particule[k]->rayon);
 		}
+		free(particule[i]);
+		nb_particules--;
+		particule = realloc(particule, nb_particules*sizeof(STR_PARTICULE));
 		
 	}
 	return particule;
@@ -235,4 +238,30 @@ void particule_free_particules()
 		free(particule[i]);
 	}
 	free(particule);
+}
+
+void particule_tri()
+{
+	STR_PARTICULE* token;
+	int compteur;
+	for(int k=0; k< nb_particules;k++)
+	{
+		token = particule[k];
+		compteur = k;
+		for(int i=k+1 ; i< nb_particules-k ; i++)
+		{
+			if (token->rayon < particule[i]->rayon)
+			{
+				token = particule[i];
+				compteur++;
+			}
+		}
+		particule[compteur]=particule[k];
+		particule[k]=token;
+		
+	}
+	for(int i=0;i< nb_particules;i++)
+	{
+		printf("%lf \n" , particule[i]->rayon);
+	}
 }

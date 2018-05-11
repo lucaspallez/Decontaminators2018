@@ -10,8 +10,6 @@
 #define INIT_TOKEN_ALPHA		4
 #define INIT_TOKEN_R			5
 #define INIT_TOKEN_T			2
-#define NBR_COORDONNEES_R		3
-#define NBR_COORDONNEES_P		4
 
 
 int simulation_ouverture_fichier (const char *file_name);
@@ -20,5 +18,7 @@ int simulation_get_nb_robots();
 int simulation_get_nb_particules();
 STR_ROBOT** simulation_get_robots();
 STR_PARTICULE** simulation_get_particules();
+void simulation_boucle();
+int simulation_robot_colision_boucle(int i);
 
 #endif
