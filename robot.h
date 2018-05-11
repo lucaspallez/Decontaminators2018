@@ -20,7 +20,8 @@ struct Robot
 	double pos_x;
 	double pos_y;
 	double angle;
-	int occup;
+	S2D occup;
+	bool actif;
 };
 
 
@@ -31,5 +32,6 @@ int robot_avancement(int k, char *tab);
 bool robot_collision();
 STR_ROBOT** robot_donnees();
 void robot_free_robots();
+void robot_vrot(int i, double*angle);
 
 #endif

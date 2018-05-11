@@ -87,7 +87,7 @@ bool simulation_colision_robot_particule()
 void simulation_boucle()
 {
 	double*delta_gamma=NULL;
-	double vrot, vtrans;
+	double vtran;
 	for(int i = 0; i < nb_particules ; i++)
 	{
 		if (rand()/RAND_MAX <= DECOMPOSITION_RATE)
@@ -99,62 +99,72 @@ void simulation_boucle()
 	
 	for (int i=0 ; i < nb_robots ; i++)
 	{
-		S2D rob;
+		S2D rob = {0,0};
+		S2D part= {0,0};
 		rob.x = robot[i]->pos_x;
 		rob.y = robot[i]->pos_y;
 		int k = simulation_robot_colision_boucle(i); 
 		
-		if ( k != -1)
+		if ( k != LIBRE)
 		{
-			robot[i]->occup = k;
-			S2D part;
+			robot[i]->actif = 1;
+			robot[i]->occup.x = particule[k]->pos_x;
+			robot[i]->occup.y = particule[k]->pos_y;
 			part.x = particule[k]->pos_x;
 			part.y = particule[k]->pos_y;
 			if(!util_alignement(rob,robot[i]->angle,part))
 			{
 				util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
-				vrot = *(delta_gamma) / DELTA_T;
-				if (fabs(vrot) > VROT_MAX)
-				{
-					if(vrot > 0)
-						vrot = VROT_MAX;
-					else
-						vrot = -VROT_MAX;
-				}
-				robot[i]->angle = robot[i]->angle + vrot*DELTA_T;
+				robot_vrot(i,delta_gamma);
 			}
 			else
 			{
-				robot[i]->occup=LIBRE;
+				robot[i]->actif = 0;
 				nb_particules--;
 				free(particule[k]);
+				particule[k]=NULL;
 				particule = realloc (particule,nb_particules*sizeof(STR_PARTICULE));
 			}
 		}
 		else
 		{
-			if (robot[i]->occup != LIBRE)
+			if (robot[i]->actif)
 			{
-				S2D part;
-				part.x = particule[robot[i]->occup]->pos_x;
-				part.y = particule[robot[i]->occup]->pos_y;
-				if(!util_alignement(rob,robot[i]->angle,part))
+				part.x = robot[i]->occup.x;
+				part.y = robot[i]->occup.y;
+				double L = 0;
+				L = util_distance(rob, robot[i]->occup);
+				vtran = L/DELTA_T;
+				
+				if(!util_alignement(rob,robot[i]->angle,robot[i]->occup))
 				{
+					if(util_ecart_angle(rob,robot[i]->angle,part,delta_gamma))
+					{
+						if(fabs(*(delta_gamma)) > M_PI/2)
+						{
+							robot_vrot(i,delta_gamma);
+						}
+						else
+						{
+							robot_vrot(i,delta_gamma);
+							rob = util_deplacement(rob, robot[i]->angle, vtran*DELTA_T);
+							robot[i]->pos_x=rob.x;
+							robot[i]->pos_y=rob.y;
+							
+						}
+						
+					}
 				}
 				else
 				{
-					vtrans = VTRAN_MAX;
-					rob = util_deplacement(rob, robot[i]->angle, vtrans*DELTA_T);
+					rob = util_deplacement(rob, robot[i]->angle, vtran*DELTA_T);
 					robot[i]->pos_x=rob.x;
 					robot[i]->pos_y=rob.y;
 				}
 			}
 			else
 			{
-				//tu t'occuppes
-				//regarde si aligné
-					//si oui : avance
-					//si non : tourne
+				
 			}
 		}
 		
@@ -183,7 +193,7 @@ int simulation_robot_colision_boucle(int i)
 				return k;
 			}
 		}
-	return -1;
+	return LIBRE;
 }
 
 int simulation_get_nb_robots()

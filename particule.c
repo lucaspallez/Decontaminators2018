@@ -11,6 +11,7 @@
 static double nb_particules;
 static double *pointer_p;
 static STR_PARTICULE **particule;
+static int num = 1;
 
 double * particule_lecture_fichier(const char *file_name)
 {
@@ -75,7 +76,7 @@ double * particule_lecture_fichier(const char *file_name)
 			while( *(tab + k) != '\n' && *(tab+k) != '\r')
 			{
 				if (sscanf(tab+k,"%lf %lf %lf %lf",&t,&r,&xp,&yp)
-					!= NBR_COORDONNEES_P)
+					!= NBR_COORDONNEES_P -1)
 					 break;
 				if (r > R_PARTICULE_MAX || r < R_PARTICULE_MIN ||
 					fabs(xp) > DMAX || fabs(yp) > DMAX||
@@ -110,7 +111,7 @@ double * particule_lecture_fichier(const char *file_name)
 				etat = FIN;
 			break;
 			case FIN : 
-			if(sscanf(tab,"%lf %lf %lf %lf",&t,&r,&xp,&yp) == NBR_COORDONNEES_P)
+			if(sscanf(tab,"%lf %lf %lf %lf",&t,&r,&xp,&yp) == NBR_COORDONNEES_P -1)
 			{
 				error_missing_fin_liste_particules(line_number);
 				return NULL;
@@ -134,7 +135,7 @@ int particule_avancement(int k, char * tab)
 	int compteur= INITIALISATION;
 	int token = INITIALISATION;
 	
-	while(compteur<=NBR_COORDONNEES_P&&*(tab+k)!='\n'&&*(tab+k)!='\r')
+	while(compteur<=NBR_COORDONNEES_P-1&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
 		if (token != compteur || *(tab+k) == '.')
 			while(*(tab+k)!='\t'&&*(tab+k)!=' '&& *(tab+k)!='\n'&&*(tab+k)!='\r')
@@ -144,7 +145,7 @@ int particule_avancement(int k, char * tab)
 			k++;
 		else
 		{
-			if (compteur != NBR_COORDONNEES_P)
+			if (compteur != NBR_COORDONNEES_P-1)
 			{
 				k++;
 				compteur++;
@@ -196,7 +197,9 @@ STR_PARTICULE** particule_donnees()
 		particule[z]->energie = *(pointer_p+(z*NBR_COORDONNEES_P));
 		particule[z]->rayon = *(pointer_p+((z*NBR_COORDONNEES_P)+1));
 		particule[z]->pos_x = *(pointer_p+((z*NBR_COORDONNEES_P)+2));
-		particule[z]->pos_y = *(pointer_p+((z*NBR_COORDONNEES_P)+3));	
+		particule[z]->pos_y = *(pointer_p+((z*NBR_COORDONNEES_P)+3));
+		particule[z]->num = num;
+		num++;	
 	}
 	return particule;
 }
@@ -221,8 +224,11 @@ STR_PARTICULE** particule_decomposition(int i)
 				particule[k]->pos_y = (particule[i]->pos_y+particule[k]->rayon);
 			else
 				particule[k]->pos_y = (particule[i]->pos_y-particule[k]->rayon);
+			particule[k]->num = num;
+			num++;	
 		}
 		free(particule[i]);
+		particule[i]=NULL;
 		nb_particules--;
 		particule = realloc(particule, nb_particules*sizeof(STR_PARTICULE));
 		
@@ -264,4 +270,16 @@ void particule_tri()
 	{
 		printf("%lf \n" , particule[i]->rayon);
 	}
+}
+
+int particule_recherche (int k)
+{
+	for (int i = 0 ; i < nb_particules ; i++)
+	{
+		if (particule[i]->num==k)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
