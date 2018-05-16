@@ -18,7 +18,15 @@ int simulation_get_nb_robots();
 int simulation_get_nb_particules();
 STR_ROBOT** simulation_get_robots();
 STR_PARTICULE** simulation_get_particules();
+void simulation_deplacement(S2D rob, int i);
 void simulation_boucle();
 int simulation_robot_colision_boucle(int i);
 
+
+typedef struct Temps TEMPS;
+struct Temps
+{
+	int indice;
+	double t;
+};
 #endif

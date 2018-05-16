@@ -186,6 +186,7 @@ STR_ROBOT** robot_donnees()
 		robot[z]->pos_x = *(pointer_r+(z*NBR_COORDONNEES_R));
 		robot[z]->pos_y = *(pointer_r+((z*NBR_COORDONNEES_R)+1));
 		robot[z]->angle = *(pointer_r+((z*NBR_COORDONNEES_R)+2));
+		robot[z]->actif = 0;
 	}
 	
 	return robot;
@@ -200,7 +201,7 @@ void robot_free_robots()
 	free(robot);
 }
 
-void robot_vrot(int i, double*angle)
+STR_ROBOT** robot_vrot(int i, double*angle)
 {
 	double vrot = *(angle) / DELTA_T;
 	if (fabs(vrot) > VROT_MAX)
@@ -211,5 +212,93 @@ void robot_vrot(int i, double*angle)
 			vrot = -VROT_MAX;
 	}
 	robot[i]->angle = robot[i]->angle + vrot*DELTA_T;
+	
+	return robot;
+}
+
+double robot_temps_rot_calcul(double *angle)
+{
+	double vrot = *(angle) / DELTA_T;
+	if (fabs(vrot) > VROT_MAX)
+	{			
+		if(vrot > 0)
+			vrot = VROT_MAX;
+		else
+			vrot = -VROT_MAX;
+	}
+	double temps;
+	if(vrot != 0)
+		temps = fabs(*(angle)/(vrot));
+	else
+		temps = 0;
+	return temps;
+}
+
+double robot_vtran(double L)
+{
+	double vtran;
+	vtran = L/DELTA_T;
+	if( fabs(vtran) > VTRAN_MAX)
+	{
+		if (vtran > 0)
+			vtran = VTRAN_MAX;
+		else
+			vtran = -VTRAN_MAX;
+	}
+	return vtran;
+}
+
+STR_ROBOT** robot_deplacement(S2D rob, int i)
+{
+	S2D part;
+	double * delta_gamma = NULL;
+	double ecart_angle;
+	delta_gamma = &ecart_angle;
+	double vtran;
+	part.x = robot[i]->occup.x;  
+	part.y = robot[i]->occup.y;
+	double L = 0;
+	L = util_distance(rob, part);
+	vtran = robot_vtran(L);
+	util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
+	
+	if(fabs(*delta_gamma) > EPSIL_ZERO)
+	{
+			if(fabs(*(delta_gamma)) > M_PI/2)
+			{
+				robot_vrot(i,delta_gamma);
+			}
+			else
+			{
+				robot_vrot(i,delta_gamma);
+				rob = util_deplacement(rob, robot[i]->angle, vtran*DELTA_T);
+				robot[i]->pos_x=rob.x;
+				robot[i]->pos_y=rob.y;	
+			}
+		
+	}
+	else
+	{
+		rob = util_deplacement(rob, robot[i]->angle, vtran*DELTA_T);
+		robot[i]->pos_x=rob.x;
+		robot[i]->pos_y=rob.y;
+	}
+	return robot;
+}
+
+STR_ROBOT ** robot_activation_desactivation(int i, bool a)
+{
+	if (a)
+		robot[i]->actif = 1;
+	else
+		robot[i]->actif = 0;
+	return robot;
+}
+
+STR_ROBOT ** robot_occupation(double x , double y , int i)
+{
+	robot[i]->occup.x = x;
+	robot[i]->occup.y = y;
+	return robot;
 }
 

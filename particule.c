@@ -12,6 +12,7 @@ static double nb_particules;
 static double *pointer_p;
 static STR_PARTICULE **particule;
 static int num = 1;
+STR_PARTICULE* token;
 
 double * particule_lecture_fichier(const char *file_name)
 {
@@ -205,15 +206,17 @@ STR_PARTICULE** particule_donnees()
 }
 
 STR_PARTICULE** particule_decomposition(int i)
-{	
+{
 	if ((particule[i]->rayon)*R_PARTICULE_FACTOR > R_PARTICULE_MIN)
 	{
 		for (int j = 0 ; j < 4 ; j++)
 		{
 			int k=nb_particules;
 			nb_particules++;
-			particule = realloc(particule, nb_particules*sizeof(STR_PARTICULE));
-			particule[k]=malloc(sizeof(STR_PARTICULE));
+			//~ printf("bruh \n");
+			particule_reallocation(k,1);
+			particule[k] = malloc(sizeof(STR_PARTICULE));
+			//~ printf("brah \n");
 			particule[k]->rayon = (particule[i]->rayon)*R_PARTICULE_FACTOR;
 			particule[k]->energie = particule[i]->energie*E_PARTICULE_FACTOR;
 			if (j == 0 || j == 1)
@@ -225,14 +228,14 @@ STR_PARTICULE** particule_decomposition(int i)
 			else
 				particule[k]->pos_y = (particule[i]->pos_y-particule[k]->rayon);
 			particule[k]->num = num;
-			num++;	
+			++num;	
+			//~ printf("%lf \n" , particule[k]->rayon);
 		}
-		free(particule[i]);
-		particule[i]=NULL;
-		nb_particules--;
-		particule = realloc(particule, nb_particules*sizeof(STR_PARTICULE));
+		particule_desintegration(i);
+		//particule_reallocation(0);
 		
 	}
+	//~ printf("wut \n");
 	return particule;
 }
 
@@ -246,30 +249,40 @@ void particule_free_particules()
 	free(particule);
 }
 
-void particule_tri()
+STR_PARTICULE** particule_tri()
 {
-	STR_PARTICULE* token;
+	token = malloc(sizeof(STR_PARTICULE));
 	int compteur;
 	for(int k=0; k< nb_particules;k++)
 	{
 		token = particule[k];
 		compteur = k;
-		for(int i=k+1 ; i< nb_particules-k ; i++)
+		for(int i=k+1 ; i< nb_particules ; i++)
 		{
 			if (token->rayon < particule[i]->rayon)
 			{
 				token = particule[i];
-				compteur++;
+				compteur = i;
 			}
 		}
 		particule[compteur]=particule[k];
 		particule[k]=token;
-		
 	}
-	for(int i=0;i< nb_particules;i++)
+	token = NULL;
+	
+	int nb = nb_particules;
+	for (int k = nb-1 ; k >= 0; k--)
 	{
-		printf("%lf \n" , particule[i]->rayon);
+		if (particule[k]->rayon == 0)
+		{
+			//nb_particules--;
+			//particule_reallocation(0); 
+		}
+		else break;
 	}
+			
+	
+	return particule;
 }
 
 int particule_recherche (int k)
@@ -282,4 +295,42 @@ int particule_recherche (int k)
 		}
 	}
 	return -1;
+}
+
+double particule_reallocation(int k , bool a)
+{
+	STR_PARTICULE ** token;
+	token = malloc(k*sizeof(STR_PARTICULE));
+	for (int i=0; i< k ; i++)
+	{
+		token[i] = malloc(sizeof(STR_PARTICULE));
+		token[i]->rayon = particule[i]->rayon;
+		token[i]->energie = particule[i]->energie;
+		token[i]->pos_x = particule[i]->pos_x;
+		token[i]->pos_y = particule[i]->pos_y;
+		token[i]->num = particule[i]->num;
+		free(particule[i]);
+		particule[i] = NULL;
+		
+	}
+	particule = malloc(nb_particules*sizeof(STR_PARTICULE));
+	for (int i=0; i< k; i++)
+	{
+		particule[i] = malloc(sizeof(STR_PARTICULE));
+		particule[i]->rayon=token[i]->rayon;
+		particule[i]->energie=token[i]->energie;
+		particule[i]->pos_x=token[i]->pos_x;
+		particule[i]->pos_y=token[i]->pos_y; 
+		particule[i]->num = token[i]->num;
+		free(token[i]);
+		token[i]=NULL;
+	}
+	
+	return nb_particules;
+}
+
+STR_PARTICULE ** particule_desintegration(int i)
+{
+	particule[i]->rayon=0;
+	return particule;
 }

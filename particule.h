@@ -32,6 +32,8 @@ bool particule_collision();
 STR_PARTICULE** particule_donnees();
 STR_PARTICULE** particule_decomposition(int i);
 void particule_free_particules();
-void particule_tri();
+STR_PARTICULE** particule_tri();
 int particule_recherche(int k);
+double particule_reallocation(int k ,bool a);
+STR_PARTICULE** particule_desintegration(int i);
 #endif

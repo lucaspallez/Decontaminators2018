@@ -69,7 +69,7 @@ void record_CB(int control)
 }
 void simulation(void)
 {
-		//simulation_boucle();
+		simulation_boucle();
 		nb_particules = simulation_get_nb_particules();
 		particule = simulation_get_particules();
 		robot = simulation_get_robots();
@@ -144,13 +144,21 @@ void idle(void)
 {
 	if(glutGetWindow() != main_window)
 		glutSetWindow(main_window);
-	if(sim_running)	simulation();
+	if(sim_running)
+		{
+			sim_start_button->set_name("Stop");
+			simulation();
+		}
 	glutPostRedisplay();
 }
 
 void open_CB(int control)
 {
 	ouverture_fichier();
+	sim_start_button->set_name("Start");
+	turn = 0;
+	rate = 100;
+	sim_running = 0;
 }
 
 void save_CB(int control)
@@ -179,7 +187,6 @@ void start_CB(int control)
 	//START SIMMULATION
 	if(sim_running == NOT_RUNNING)
 	{
-		sim_start_button->set_name("Stop");
 		sim_running = RUNNING;
 		//simulation();
 	}
@@ -192,7 +199,7 @@ void start_CB(int control)
 
 void step_CB(int control)
 {
-	//simulation_boucle();
+	simulation_boucle();
 	turn++;
 	sprintf(str_turn, "Turn: %d", turn);
 	record_text_turn->set_text(str_turn);

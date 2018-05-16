@@ -82,12 +82,18 @@ bool util_ecart_angle(S2D a, double alpha, S2D b, double *p_ecart_angle)
 {
 	double dist = util_distance(a,b);
 	double * alpha_p = &alpha;
+	int token;
 	util_range_angle(alpha_p);
 	if(dist > EPSIL_ZERO)
 	{
-		*p_ecart_angle = fabs(util_angle(a,b) - alpha);
-		if(*p_ecart_angle > M_PI)
-			*p_ecart_angle = 2*M_PI - *p_ecart_angle;
+		*p_ecart_angle = util_angle(a,b) - alpha;
+		if(fabs(*p_ecart_angle) > M_PI)
+		{
+			if (*p_ecart_angle > 0)
+				*p_ecart_angle = 2*M_PI - *p_ecart_angle;
+			else
+				*p_ecart_angle = 2*M_PI + *p_ecart_angle;
+		}
 		util_range_angle(p_ecart_angle);
 		return 1;
 	}
