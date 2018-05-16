@@ -22,6 +22,7 @@ extern "C"
 
 namespace
 {
+	FILE *out_ptr = NULL;
 	char save_name[STR_MAX] = "save.txt", file_name[STR_MAX] = "";
 	char str_rate[STR_MAX], str_turn[STR_MAX];
 	int main_window, turn = 0, recording, control_type, control, fichier_lu = NON_LU;
@@ -57,15 +58,18 @@ void ouverture_fichier(void)
 		energy_sum_init += particule[i]->energie;
 }
 
+void record_CB(int control)
+{
+	if(recording)
+	{
+		out_ptr = fopen("out.dat", "w");
+	}
+	if(recording == 0)
+		fclose(out_ptr);
+}
 void simulation(void)
 {
-	FILE *out_ptr = NULL;
-	if(recording)
-		out_ptr = fopen("out.dat", "w");
-		
-	while(nb_particules > 0 && sim_running == 1)
-	{
-		simulation_boucle();
+		//simulation_boucle();
 		nb_particules = simulation_get_nb_particules();
 		particule = simulation_get_particules();
 		robot = simulation_get_robots();
@@ -84,10 +88,6 @@ void simulation(void)
 		record_text_rate->set_text(str_rate);
 		if(recording)
 			fprintf(out_ptr, "%d %0.3lf\n", turn, rate);
-		
-	}
-	if(recording)
-		fclose(out_ptr);
 }
 
 void affichage(void)
@@ -144,6 +144,7 @@ void idle(void)
 {
 	if(glutGetWindow() != main_window)
 		glutSetWindow(main_window);
+	if(sim_running)	simulation();
 	glutPostRedisplay();
 }
 
@@ -180,7 +181,7 @@ void start_CB(int control)
 	{
 		sim_start_button->set_name("Stop");
 		sim_running = RUNNING;
-		simulation();
+		//simulation();
 	}
 	else
 	{
@@ -191,7 +192,7 @@ void start_CB(int control)
 
 void step_CB(int control)
 {
-	simulation_boucle();
+	//simulation_boucle();
 	turn++;
 	sprintf(str_turn, "Turn: %d", turn);
 	record_text_turn->set_text(str_turn);
