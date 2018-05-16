@@ -14,24 +14,21 @@ extern "C"
 #define TEST_ERROR			0
 #define TEST_DRAW			1
 #define STR_MAX				64
-#define PRTCL_E				0
-#define PRTCL_R				1
-#define PRTCL_XC			2
-#define PRTCL_YC			3
-#define RBT_XC				0
-#define RBT_YC				1
-#define RBT_ANGLE			2
 #define LU					1
 #define NON_LU				0
+#define RUNNING				1
+#define NOT_RUNNING			0
 
 
 namespace
 {
-	char save_name[STR_MAX] = "save.txt";
-	char file_name[STR_MAX] = "";
+	char save_name[STR_MAX] = "save.txt", file_name[STR_MAX] = "";
+	char str_rate[STR_MAX], str_turn[STR_MAX];
 	int main_window, turn = 0, recording, control_type, control, fichier_lu = NON_LU;
 	int nb_robots, nb_particules;
+	double energy_sum_init, energy_sum;
 	double rate = 0., v_trans = 0., v_rot = 0.;
+	bool sim_running = NOT_RUNNING;
 	STR_ROBOT **robot;
 	STR_PARTICULE ** particule;
 	
@@ -55,6 +52,42 @@ void ouverture_fichier(void)
 	robot = simulation_get_robots();
 	particule = simulation_get_particules();
 	fichier_lu = LU;
+	
+	for(int i=0; i< nb_particules; i++)
+		energy_sum_init += particule[i]->energie;
+}
+
+void simulation(void)
+{
+	FILE *out_ptr = NULL;
+	if(recording)
+		out_ptr = fopen("out.dat", "w");
+		
+	while(nb_particules > 0 && sim_running == 1)
+	{
+		simulation_boucle();
+		nb_particules = simulation_get_nb_particules();
+		particule = simulation_get_particules();
+		robot = simulation_get_robots();
+		turn++;
+		sprintf(str_turn, "Turn: %d", turn);
+		record_text_turn->set_text(str_turn);
+		
+		energy_sum = 0;
+		for(int i=0; i< nb_particules; i++)
+			energy_sum += particule[i]->energie;
+			
+		if(energy_sum_init != 0)
+			rate = 100*(energy_sum_init - energy_sum)/energy_sum_init;
+			
+		sprintf(str_rate, "Rate: %0.3lf", rate);
+		record_text_rate->set_text(str_rate);
+		if(recording)
+			fprintf(out_ptr, "%d %0.3lf\n", turn, rate);
+		
+	}
+	if(recording)
+		fclose(out_ptr);
 }
 
 void affichage(void)
@@ -142,20 +175,29 @@ void save_CB(int control)
 
 void start_CB(int control)
 {
-	//START SIMULATION
+	//START SIMMULATION
+	if(sim_running == NOT_RUNNING)
+	{
+		sim_start_button->set_name("Stop");
+		sim_running = RUNNING;
+		simulation();
+	}
+	else
+	{
+		sim_running = NOT_RUNNING;
+		sim_start_button->set_name("Start");
+	}
 }
 
 void step_CB(int control)
 {
-	//NEXT STEP
-}
-
-void recording_CB(int control)
-{
-	if(recording == 1)
-	{
-		//RECORD
-	}
+	simulation_boucle();
+	turn++;
+	sprintf(str_turn, "Turn: %d", turn);
+	record_text_turn->set_text(str_turn);
+	nb_particules = simulation_get_nb_particules();
+	particule = simulation_get_particules();
+	robot = simulation_get_robots();
 }
 
 void control_type_CB(int control)
@@ -215,15 +257,13 @@ void gui_init(void)
 	
 	record_panel = glui->add_panel("Recording");
 	record_box = glui->add_checkbox_to_panel(record_panel, "Record",
-											 &recording,recording, recording_CB);
+											 &recording);
 	
 	record_text_rate = glui->add_statictext_to_panel(record_panel, "Rate: ");
-	char str_rate[STR_MAX];
 	sprintf(str_rate, "Rate: %.3lf", rate);
 	record_text_rate->set_text(str_rate);
 	
 	record_text_turn = glui->add_statictext_to_panel(record_panel, "Turn: ");
-	char str_turn[STR_MAX];
 	sprintf(str_turn, "Turn: %d", turn);
 	record_text_turn->set_text(str_turn);
 	
