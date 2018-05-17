@@ -98,31 +98,34 @@ void simulation_boucle()
 	{
 		if (((double) rand()/RAND_MAX) <= DECOMPOSITION_RATE)
 		{
-			particule = particule_decomposition(i);
-			nb_particules = particule_nombre_particules();
+			if(particule[i])
+			{
+				particule = particule_decomposition(i);
+				nb_particules = particule_nombre_particules();
+			}
+
 		}
 		
 		
 		//nb_particules = particule_reallocation(0);
 	}
 	particule = particule_tri();
+	nb_particules = particule_nombre_particules();
 	//~ printf("%lf" , nb_particules);
+	//~ printf("bouh \n");
 	//~ for (int i = 0 ; i < nb_particules ; i++)
 	//~ {
 		//~ printf("%lf \n", particule[i]->rayon);
 	//~ }
-	
-	
-	
+
 	for (int i=0 ; i < nb_robots ; i++)
 	{
 		S2D rob = {0,0};
 		S2D part= {0,0};
 		rob.x = robot[i]->pos_x;
 		rob.y = robot[i]->pos_y;
-		
 		int k = simulation_robot_colision_boucle(i); 
-		//~ printf("%d \n" , k);
+
 		if ( k != LIBRE)
 		{
 			robot = robot_activation_desactivation(i, 1);
@@ -142,6 +145,7 @@ void simulation_boucle()
 			{
 				robot = robot_activation_desactivation(i, 0);
 				particule = particule_desintegration(k);
+				robot = robot_color(i);
 				//~ nb_particules = particule_reallocation(0);
 			}
 		}
@@ -152,57 +156,62 @@ void simulation_boucle()
 				if(rob.x - robot[i]->occup.x < EPSIL_ZERO && rob.y - robot[i]->occup.y < EPSIL_ZERO)
 					robot = robot_activation_desactivation(i,0);
 				else
+				{
 					robot = robot_deplacement(rob, i);
+				}
 			}
 		}
 	}
 	// EDITION DE BUT
 	for ( int i = 0 ; i< nb_particules ; i++)
 	{
-		if(particule[i]->rayon > 0)
+		if(particule[i])
 		{
-			S2D part = {particule[i]->pos_x,particule[i]->pos_y};
-			S2D rob = {0,0};
-			double L;
-			for (int k=0 ; k < nb_robots ; k++)
+			if(particule[i]->rayon > 0)
 			{
-				//~ printf("k= %d \n" , k);
-				rob.x = robot[k]->pos_x;
-				rob.y = robot[k]->pos_y;
-				L = util_distance(part,rob);
-				if(util_ecart_angle(rob,robot[k]->angle,part,delta_gamma))
+				S2D part = {particule[i]->pos_x,particule[i]->pos_y};
+				S2D rob = {0,0};
+				double L;
+				for (int k=0 ; k < nb_robots ; k++)
 				{
-					temps_rot = robot_temps_rot_calcul(delta_gamma);
-					vtran = robot_vtran(L);
-					temps_tran= L / vtran ;
-					temps_tot[k] = temps_tran+temps_rot;
-					//~ printf ("%lf \n" , temps_tot[k]);
-				}
-			}
-				token.t = 10000000000000;
-				for(int k = 0 ; k < nb_robots; k++)
-				{
-					if (!robot[k]->actif)
+					//~ printf("k= %d \n" , k);
+					rob.x = robot[k]->pos_x;
+					rob.y = robot[k]->pos_y;
+					L = util_distance(part,rob);
+					if(util_ecart_angle(rob,robot[k]->angle,part,delta_gamma))
 					{
-						if (temps_tot[k] < token.t)
-						{
-							token.t = temps_tot[k];
-							token.indice = k;
-						}
+						temps_rot = robot_temps_rot_calcul(delta_gamma);
+						vtran = robot_vtran(L);
+						temps_tran= L / vtran ;
+						temps_tot[k] = temps_tran+temps_rot;
+						//~ printf ("%lf \n" , temps_tot[k]);
 					}
 				}
-			if (!robot[token.indice]->actif)
-			{
-				robot = robot_activation_desactivation(token.indice, 1);
-				robot = robot_occupation(part.x , part.y, token.indice);
-				rob.x = robot[token.indice]->pos_x;
-				rob.y = robot[token.indice]->pos_y;
-				robot = robot_deplacement(rob,token.indice);
+					token.t = 10000000000000;
+					for(int k = 0 ; k < nb_robots; k++)
+					{
+						if (!robot[k]->actif)
+						{
+							if (temps_tot[k] < token.t)
+							{
+								token.t = temps_tot[k];
+								token.indice = k;
+							}
+						}
+					}
+				if (!robot[token.indice]->actif)
+				{
+					robot = robot_activation_desactivation(token.indice, 1);
+					robot = robot_occupation(part.x , part.y, token.indice);
+					rob.x = robot[token.indice]->pos_x;
+					rob.y = robot[token.indice]->pos_y;
+					robot = robot_deplacement(rob,token.indice);
+				}
 			}
-				
-			
 		}
 	}
+	//~ nb_particules = particule_reallocation(nb_particules,0);
+	//~ particule = particule_get_particules();
 }
 
 int simulation_robot_colision_boucle(int i)
@@ -211,7 +220,7 @@ int simulation_robot_colision_boucle(int i)
  	double dist_x ,dist_y ;
 		for (int k = 0 ; k < nb_particules ; k++)
 		{
-			if(particule[k]->rayon != 0)
+			if(particule[k])
 			{
 				x1 = robot[i]->pos_x;
 				y1 = robot[i]->pos_y;

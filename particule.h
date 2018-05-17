@@ -36,4 +36,5 @@ STR_PARTICULE** particule_tri();
 int particule_recherche(int k);
 double particule_reallocation(int k ,bool a);
 STR_PARTICULE** particule_desintegration(int i);
+STR_PARTICULE** particule_get_particules();
 #endif

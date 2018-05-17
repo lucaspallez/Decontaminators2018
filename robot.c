@@ -66,7 +66,7 @@ double * robot_lecture_fichier(const char *file_name)
 			case DONNEES_R :  
 				while( *(tab + k) != '\n' && *(tab+k) != '\r')
 				{
-					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!= NBR_COORDONNEES_R-2)
+					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!= NBR_COORDONNEES_R-3)
 						break;
 					if(fabs(alpha) > M_PI)
 					{
@@ -98,7 +98,7 @@ double * robot_lecture_fichier(const char *file_name)
 				break;
 			
 			case FIN_R : 
-				if(sscanf(tab,"%lf %lf %lf",&xr,&yr,&alpha) == NBR_COORDONNEES_R-2)
+				if(sscanf(tab,"%lf %lf %lf",&xr,&yr,&alpha) == NBR_COORDONNEES_R-3)
 				{
 					error_missing_fin_liste_robots(line_number);
 					return NULL;
@@ -124,7 +124,7 @@ int robot_avancement(int k, char *tab)
 {
 	int compteur=INITIALISATION;
 	int token = INITIALISATION;
-	while(compteur<=NBR_COORDONNEES_R-2&&*(tab+k)!='\n'&&*(tab+k)!='\r')
+	while(compteur<=NBR_COORDONNEES_R-3&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
 		if(token != compteur || *(tab+k) == '.')
 			while (*(tab+k)!='\t'&&*(tab+k)!=' '&&*(tab+k)!='\n' &&*(tab+k)!='\r')
@@ -134,7 +134,7 @@ int robot_avancement(int k, char *tab)
 			k++;
 		else
 		{
-			if (compteur != NBR_COORDONNEES_R-2)
+			if (compteur != NBR_COORDONNEES_R-3)
 			{
 				k++;
 				compteur++;
@@ -299,6 +299,12 @@ STR_ROBOT ** robot_occupation(double x , double y , int i)
 {
 	robot[i]->occup.x = x;
 	robot[i]->occup.y = y;
+	return robot;
+}
+
+STR_ROBOT** robot_color(int i);
+{
+	robor->color = BLUE;
 	return robot;
 }
 

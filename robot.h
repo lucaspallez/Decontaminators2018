@@ -10,8 +10,9 @@
 #define INITIALISATION			0
 #define INIT_TOKEN_POS			25
 #define INIT_TOKEN_ALPHA		4
-#define NBR_COORDONNEES_R		5
+#define NBR_COORDONNEES_R		6
 #define LIBRE					-1
+#define BLUE					0
 
 
 typedef struct Robot STR_ROBOT;
@@ -22,6 +23,7 @@ struct Robot
 	double angle;
 	S2D occup;
 	bool actif;
+	int color;
 };
 
 
@@ -38,6 +40,7 @@ double robot_vtran(double L);
 STR_ROBOT** robot_deplacement(S2D rob, int i);
 STR_ROBOT** robot_activation_desactivation(int i, bool a);
 STR_ROBOT ** robot_occupation(double x , double y, int i);
+STR_ROBOT** robot_color(int i);
 
 
 
