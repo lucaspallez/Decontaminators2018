@@ -12,7 +12,7 @@
 #define INIT_TOKEN_ALPHA		4
 #define NBR_COORDONNEES_R		6
 #define LIBRE					-1
-#define BLUE					0
+#define BLUE					2
 
 
 typedef struct Robot STR_ROBOT;

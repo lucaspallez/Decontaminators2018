@@ -302,9 +302,9 @@ STR_ROBOT ** robot_occupation(double x , double y , int i)
 	return robot;
 }
 
-STR_ROBOT** robot_color(int i);
+STR_ROBOT** robot_color(int i)
 {
-	robor->color = BLUE;
+	robot[i]->color = BLUE;
 	return robot;
 }
 
