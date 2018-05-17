@@ -13,7 +13,8 @@
 #define NBR_COORDONNEES_R		6
 #define LIBRE					-1
 #define BLUE					2
-
+#define BLACK					0
+#define RED					    1
 
 typedef struct Robot STR_ROBOT;
 struct Robot
@@ -40,7 +41,7 @@ double robot_vtran(double L);
 STR_ROBOT** robot_deplacement(S2D rob, int i);
 STR_ROBOT** robot_activation_desactivation(int i, bool a);
 STR_ROBOT ** robot_occupation(double x , double y, int i);
-STR_ROBOT** robot_color(int i);
+STR_ROBOT** robot_color(int i, int color);
 
 
 

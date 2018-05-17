@@ -145,7 +145,7 @@ void simulation_boucle()
 			{
 				robot = robot_activation_desactivation(i, 0);
 				particule = particule_desintegration(k);
-				robot = robot_color(i);
+				robot = robot_color(i , BLUE);
 				//~ nb_particules = particule_reallocation(0);
 			}
 		}
