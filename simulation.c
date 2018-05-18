@@ -83,7 +83,7 @@ bool simulation_colision_robot_particule()
 	return 1;
 }
 
-void simulation_boucle()
+void simulation_boucle(double translat, double rotat)
 {	
 	double*delta_gamma=NULL;
 	double ecart_angle;
@@ -124,10 +124,14 @@ void simulation_boucle()
 		S2D part= {0,0};
 		rob.x = robot[i]->pos_x;
 		rob.y = robot[i]->pos_y;
-		int k = simulation_robot_colision_boucle(i); 
-
+		robot[i]->vrot=0;
+		robot[i]->vtran=0;
+		int k = simulation_robot_colision_boucle(i, 1);
+		//~ int j = simulation_robot_colision_boucle(i, 0);
+		
 		if ( k != LIBRE)
 		{
+			//~ simulation_alignement(rob, i);
 			robot = robot_activation_desactivation(i, 1);
 			part.x = particule[k]->pos_x;
 			part.y = particule[k]->pos_y;
@@ -145,11 +149,12 @@ void simulation_boucle()
 			{
 				robot = robot_activation_desactivation(i, 0);
 				particule = particule_desintegration(k);
-				robot = robot_color(i , BLUE);
+				if (robot[i]->color != RED)
+					robot = robot_color(i , BLUE);
 				//~ nb_particules = particule_reallocation(0);
 			}
 		}
-		else
+		else //if (j == LIBRE)
 		{
 			if (robot[i]->actif)
 			{
@@ -157,10 +162,18 @@ void simulation_boucle()
 					robot = robot_activation_desactivation(i,0);
 				else
 				{
-					robot = robot_deplacement(rob, i);
+					robot = robot_deplacement(rob, i, 1);
+					simulation_alignement(rob,i);
 				}
 			}
 		}
+		//~ else
+		//~ {
+			//~ double alpha = (((double) rand()/RAND_MAX))*M_PI;
+			//~ robot = robot_vrot(i, &alpha);
+			//~ robot = robot_deplacement(rob, i , 0);
+			//~ simulation_alignement(rob, i);
+		//~ }
 	}
 	// EDITION DE BUT
 	for ( int i = 0 ; i< nb_particules ; i++)
@@ -201,23 +214,38 @@ void simulation_boucle()
 					}
 				if (!robot[token.indice]->actif)
 				{
+					
 					robot = robot_activation_desactivation(token.indice, 1);
 					robot = robot_occupation(part.x , part.y, token.indice);
 					rob.x = robot[token.indice]->pos_x;
 					rob.y = robot[token.indice]->pos_y;
-					robot = robot_deplacement(rob,token.indice);
+					robot = robot_deplacement(rob,token.indice, 1);
+					simulation_alignement(rob,token.indice);
+					
+
 				}
 			}
 		}
 	}
-	//~ nb_particules = particule_reallocation(nb_particules,0);
-	//~ particule = particule_get_particules();
+	for( int i =0 ; i< nb_robots ; i++)
+	{
+		int j = simulation_robot_colision_boucle(i,0);
+		if (j != LIBRE)
+		{	
+			S2D rob = {robot[i]->pos_x, robot[i]->pos_y};
+			robot_manuel(VTRAN_MAX,VROT_MAX,i);
+			simulation_alignement(rob, i);
+		}
+	}
+	simulation_manuel(translat,rotat);
 }
 
-int simulation_robot_colision_boucle(int i)
+int simulation_robot_colision_boucle(int i, bool rp)
 {
 	double x1, x2, y1, y2, r1;
  	double dist_x ,dist_y ;
+ 	if (rp)
+ 	{
 		for (int k = 0 ; k < nb_particules ; k++)
 		{
 			if(particule[k])
@@ -231,12 +259,36 @@ int simulation_robot_colision_boucle(int i)
 				dist_x = fabs(x2-x1);
 				dist_y = fabs(y2-y1);
 		
-				if( sqrt( dist_x*dist_x + dist_y*dist_y) <= r1+R_ROBOT)
+				if( sqrt( dist_x*dist_x + dist_y*dist_y) <= r1+R_ROBOT+EPSIL_ZERO/10)
 				{
 					return k;
 				}
 			}
 		}
+	}
+	else
+	{
+		for (int k = 0 ; k < nb_robots ; k++)
+		{
+			if (k != i)
+			{
+				{
+					x1 = robot[i]->pos_x;
+					y1 = robot[i]->pos_y;
+					x2 = robot[k]->pos_x;
+					y2 = robot[k]->pos_y;
+					
+					dist_x = x2-x1;
+					dist_y = y2-y1;
+			
+					if( sqrt( dist_x*dist_x + dist_y*dist_y) <= 2*R_ROBOT)
+					{
+						return k;
+					}
+				}
+			}
+		}
+	}
 	return LIBRE;
 }
 
@@ -256,4 +308,49 @@ STR_PARTICULE **simulation_get_particules()
 {
 	return particule;
 }
+
+void simulation_alignement(S2D rob,int i)
+{
+	int k;
+	for( int j = 0 ; j< nb_particules ; j++)
+	{
+		k = simulation_robot_colision_boucle(i, 1);
+		if (k!=LIBRE)
+		{
+			S2D token = {robot[i]->pos_x, robot[i]->pos_y};
+			S2D cible = {particule[k]->pos_x, particule[k]->pos_y};
+			rob = robot_alignement(rob,token,cible,1,particule[k]->rayon,robot[i]->angle);
+			robot = robot_recul(rob, i);						
+		}
+	}
+	k = LIBRE;
+	for (int j = 0 ; j< nb_robots ; j++)
+	{
+		k = simulation_robot_colision_boucle(i, 0);
+		if (k!=LIBRE)
+		{
+			S2D token = {robot[i]->pos_x, robot[i]->pos_y};
+			S2D cible = {robot[k]->pos_x, robot[k]->pos_y};
+			rob = robot_alignement(rob,token,cible,0,R_ROBOT,robot[i]->angle);
+			robot = robot_recul(rob, i);
+			double alpha = (((double) rand()/RAND_MAX))*M_PI;
+			robot = robot_vrot(i, &alpha);
+		}
+	}
+}
+
+STR_ROBOT** simulation_manuel (double translat , double rotat)
+{
+	for (int i = 0; i< nb_robots ; i++)
+	{
+		if (robot[i]->color == RED)
+		{
+			S2D init = {robot[i]->pos_x,robot[i]->pos_y};
+			robot = robot_manuel(translat, rotat , i);
+			simulation_alignement(init, i);
+		}
+	}
+	return robot;
+}
+
 

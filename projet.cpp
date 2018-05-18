@@ -18,10 +18,7 @@ extern "C"
 #define NON_LU				0
 #define RUNNING				1
 #define NOT_RUNNING			0
-#define RED					1
-#define BLACK				0
-#define OPEN				1
-#define CLOSED				0
+
 
 namespace
 {
@@ -30,17 +27,11 @@ namespace
 	char str_rate[STR_MAX], str_turn[STR_MAX];
 	int main_window, turn = 0, recording, control_type, control, fichier_lu = NON_LU;
 	int nb_robots, nb_particules;
-	int width = WINDOW_SIZE, height = WINDOW_SIZE;
-	float black[3] = {0.0,0.0,0.0};
-	float blue[3] = {0.0,0.0,1.0};
-	float red[3] = {1.0,0.0,0.0};
-	float gray[3] = {0.7,0.7,0.7};
 	double energy_sum_init, energy_sum;
 	double rate = 0., v_trans = 0., v_rot = 0.;
-	bool sim_running = NOT_RUNNING, robot_selected = false, file_open;
+	bool sim_running = NOT_RUNNING;
 	STR_ROBOT **robot;
 	STR_PARTICULE ** particule;
-	S2D mouse;
 	
 	GLfloat aspect_ratio;
 	GLUI_Button *exit_button, *open_button, *save_button;
@@ -62,6 +53,7 @@ void ouverture_fichier(void)
 	robot = simulation_get_robots();
 	particule = simulation_get_particules();
 	fichier_lu = LU;
+	
 	for(int i=0; i< nb_particules; i++)
 		energy_sum_init += particule[i]->energie;
 }
@@ -72,31 +64,30 @@ void record_CB(int control)
 	{
 		out_ptr = fopen("out.dat", "w");
 	}
-	else
+	if(recording == 0)
 		fclose(out_ptr);
 }
 void simulation(void)
 {
-	simulation_boucle();
-	sim_start_button->set_name("Stop");
-	nb_particules = simulation_get_nb_particules();
-	particule = simulation_get_particules();
-	robot = simulation_get_robots();
-	turn++;
-	sprintf(str_turn, "Turn: %d", turn);
-	record_text_turn->set_text(str_turn);
-	
-	energy_sum = 0;
-	for(int i=0; i< nb_particules; i++)
-		energy_sum += particule[i]->energie;
+		simulation_boucle(0,0);
+		nb_particules = simulation_get_nb_particules();
+		particule = simulation_get_particules();
+		robot = simulation_get_robots();
+		turn++;
+		sprintf(str_turn, "Turn: %d", turn);
+		record_text_turn->set_text(str_turn);
 		
-	if(energy_sum_init != 0)
-		rate = 100*(energy_sum_init - energy_sum)/energy_sum_init;
-		
-	sprintf(str_rate, "Rate: %0.3lf", rate);
-	record_text_rate->set_text(str_rate);
-	if(recording)
-		fprintf(out_ptr, "%d %0.3lf\n", turn, rate);
+		energy_sum = 0;
+		for(int i=0; i< nb_particules; i++)
+			energy_sum += particule[i]->energie;
+			
+		if(energy_sum_init != 0)
+			rate = 100*(energy_sum_init - energy_sum)/energy_sum_init;
+			
+		sprintf(str_rate, "Rate: %0.3lf", rate);
+		record_text_rate->set_text(str_rate);
+		if(recording)
+			fprintf(out_ptr, "%d %0.3lf\n", turn, rate);
 }
 
 void affichage(void)
@@ -111,18 +102,28 @@ void affichage(void)
 		glOrtho (gauche*aspect_ratio, droite*aspect_ratio, bas, haut, -1.0, 1.0);
 	if(fichier_lu == LU)
 	{
+		//PARTICULES
+		for(int i = 0; i < nb_particules; i++)
+		{
+			if(particule[i])
+			{
+				double x_c = particule[i]->pos_x;
+				double y_c = particule[i]->pos_y;
+				double radius = particule[i]->rayon;
+				float gray[3] = {0.7, 0.7,0.7};
+				graphic_set_color3fv(gray);
+				graphic_draw_circle(x_c, y_c, radius, GRAPHIC_FILLED);
+			}
+		}
 		//ROBOTS
 		for(int i = 0; i < nb_robots; i++)
 		{
+			float black[3] = {0.0,0.0,0.0};
+			float red[3] = {1.0,0.0,0.0};
 			double x_c = robot[i]->pos_x;
 			double y_c = robot[i]->pos_y;
 			double angle = robot[i]->angle;
-			if(robot[i]->color == RED)
-				graphic_set_color3fv(red);
-			else if(robot[i]->color == BLUE)
-				graphic_set_color3fv(blue);
-			else	
-				graphic_set_color3fv(black);
+			graphic_set_color3fv(black);
 			graphic_set_line_width(2.0);
 			graphic_draw_circle (x_c, y_c, R_ROBOT, GRAPHIC_EMPTY);
 			graphic_draw_segment(x_c, y_c, x_c + R_ROBOT*cos(angle),
@@ -131,15 +132,7 @@ void affichage(void)
 			graphic_draw_rectangle(x_c, y_c, 0.15, 0.15, GRAPHIC_FILLED);
 		}
 		
-		//PARTICULES
-		for(int i = 0; i < nb_particules; i++)
-		{
-			double x_c = particule[i]->pos_x;
-			double y_c = particule[i]->pos_y;
-			double radius = particule[i]->rayon;
-			graphic_set_color3fv(gray);
-			graphic_draw_circle(x_c, y_c, radius, GRAPHIC_FILLED);
-		}
+		
 	}
 	glutSwapBuffers();
 }
@@ -149,44 +142,27 @@ void reshape(int w, int h)
 	glViewport(0,0,w,h);
 	aspect_ratio = (GLfloat) w / (GLfloat) h;
 	glutPostRedisplay();
-	width = w;
-	height = h;
 }
 
 void idle(void)
 {
 	if(glutGetWindow() != main_window)
 		glutSetWindow(main_window);
-	if(sim_running)	simulation();
-	if(nb_particules == 0)
-	{
-		sim_running = 0;
-		sim_start_button->set_name("Start");
-		if(recording)
+	if(sim_running)
 		{
-			if(file_open)
-			{
-				fclose(out_ptr);
-				file_open = CLOSED;
-			}
+			sim_start_button->set_name("Stop");
+			simulation();
 		}
-	}
 	glutPostRedisplay();
 }
 
 void open_CB(int control)
 {
-	turn = 0;
-	rate = 0;
-	sim_running = 0;
-	energy_sum = 0;
-	energy_sum_init = 0;
-	sprintf(str_turn, "Turn: %d", turn);
-	record_text_turn->set_text(str_turn);
-	sprintf(str_rate, "Rate: %0.3lf", rate);
-	record_text_rate->set_text(str_rate);
 	ouverture_fichier();
 	sim_start_button->set_name("Start");
+	turn = 0;
+	rate = 100;
+	sim_running = 0;
 }
 
 void save_CB(int control)
@@ -216,6 +192,7 @@ void start_CB(int control)
 	if(sim_running == NOT_RUNNING)
 	{
 		sim_running = RUNNING;
+		//simulation();
 	}
 	else
 	{
@@ -226,50 +203,25 @@ void start_CB(int control)
 
 void step_CB(int control)
 {
-	simulation();
+	simulation_boucle(0,0);
+	turn++;
+	sprintf(str_turn, "Turn: %d", turn);
+	record_text_turn->set_text(str_turn);
+	nb_particules = simulation_get_nb_particules();
+	particule = simulation_get_particules();
+	robot = simulation_get_robots();
 }
 
-void mouse_CB(int mouse_button, int mouse_state, int abs_mouse_x, int abs_mouse_y)
+void control_type_CB(int control)
 {
-	if(control_type_group->get_int_val() == 1)
+	if(control_type_group->get_int_val() == 0)
 	{
-		if(mouse_button == GLUT_LEFT_BUTTON && mouse_state == GLUT_DOWN)
-		{
-			//conversion absolu / relatif
-			mouse.x = 2*DMAX*abs_mouse_x/width - DMAX;
-			mouse.y = 2*DMAX*abs_mouse_y/height - DMAX;
-			for(int i = 0; i < nb_robots; i++)
-			{
-				S2D str_robot = {robot[i]->pos_x, robot[i]->pos_y};
-				double dist = util_distance(str_robot, mouse);
-				if(dist <= R_ROBOT)
-				{
-					robot[i]->color = RED;
-				}
-				else robot[i]->color = BLACK;
-			}
-		}
+		//AUTOMATIC MODE
 	}
-}
-
-void keyboard_CB(int key,int x, int y)
-{
-	if(robot_selected)
-		switch(key)
-		{
-		case GLUT_KEY_UP:
-		//vtrans +0.250 if < 0.750
-		break;
-		case GLUT_KEY_DOWN:
-		//vtrans -0.250 if > -0.750
-		break;
-		case GLUT_KEY_LEFT:
-		//vrot +0.125 if < 0.500
-		break;
-		case GLUT_KEY_RIGHT:
-		//vrot -0.125 if > 0.500
-		break;
-		}
+	else if(control_type_group->get_int_val() == 1)
+	{
+		//MANUAL MODE
+	}
 }
 
 void display_init(void)
@@ -287,8 +239,6 @@ void display_init(void)
 	
 	glutDisplayFunc(affichage);
 	glutReshapeFunc(reshape);
-	glutMouseFunc(mouse_CB);
-	glutSpecialFunc(keyboard_CB);
 	GLUI_Master.set_glutIdleFunc(idle);
 }
 
@@ -319,7 +269,7 @@ void gui_init(void)
 	
 	record_panel = glui->add_panel("Recording");
 	record_box = glui->add_checkbox_to_panel(record_panel, "Record",
-											 &recording, recording, record_CB);
+											 &recording);
 	
 	record_text_rate = glui->add_statictext_to_panel(record_panel, "Rate: ");
 	sprintf(str_rate, "Rate: %.3lf", rate);
@@ -333,7 +283,8 @@ void gui_init(void)
 	
 	control_mode_panel = glui->add_panel("Control mode");
 	control_type_group = glui->add_radiogroup_to_panel(control_mode_panel,
-													   &control_type);
+													   &control_type,
+													   control, control_type_CB);
 	glui->add_radiobutton_to_group(control_type_group, "Automatic");
 	glui->add_radiobutton_to_group(control_type_group, "Manual");
 	

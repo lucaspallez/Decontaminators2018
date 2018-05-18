@@ -10,7 +10,7 @@
 #define INITIALISATION			0
 #define INIT_TOKEN_POS			25
 #define INIT_TOKEN_ALPHA		4
-#define NBR_COORDONNEES_R		6
+#define NBR_COORDONNEES_R		8
 #define LIBRE					-1
 #define BLUE					2
 #define BLACK					0
@@ -25,6 +25,8 @@ struct Robot
 	S2D occup;
 	bool actif;
 	int color;
+	double vrot;
+	double vtran;
 };
 
 
@@ -38,10 +40,14 @@ void robot_free_robots();
 STR_ROBOT ** robot_vrot(int i, double*angle);
 double robot_temps_rot_calcul(double*angle);
 double robot_vtran(double L);
-STR_ROBOT** robot_deplacement(S2D rob, int i);
+STR_ROBOT** robot_deplacement(S2D rob, int i, bool rp);
 STR_ROBOT** robot_activation_desactivation(int i, bool a);
 STR_ROBOT ** robot_occupation(double x , double y, int i);
 STR_ROBOT** robot_color(int i, int color);
+S2D robot_alignement(S2D init, S2D rob, S2D cible, bool RP, double rayon, double angle);
+STR_ROBOT** robot_recul(S2D rob, int i);
+STR_ROBOT** robot_manuel(double translat , double rotat, int i);
+
 
 
 

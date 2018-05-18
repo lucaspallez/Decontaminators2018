@@ -66,7 +66,7 @@ double * robot_lecture_fichier(const char *file_name)
 			case DONNEES_R :  
 				while( *(tab + k) != '\n' && *(tab+k) != '\r')
 				{
-					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!= NBR_COORDONNEES_R-3)
+					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!= NBR_COORDONNEES_R-5)
 						break;
 					if(fabs(alpha) > M_PI)
 					{
@@ -98,7 +98,7 @@ double * robot_lecture_fichier(const char *file_name)
 				break;
 			
 			case FIN_R : 
-				if(sscanf(tab,"%lf %lf %lf",&xr,&yr,&alpha) == NBR_COORDONNEES_R-3)
+				if(sscanf(tab,"%lf %lf %lf",&xr,&yr,&alpha) == NBR_COORDONNEES_R-5)
 				{
 					error_missing_fin_liste_robots(line_number);
 					return NULL;
@@ -124,7 +124,7 @@ int robot_avancement(int k, char *tab)
 {
 	int compteur=INITIALISATION;
 	int token = INITIALISATION;
-	while(compteur<=NBR_COORDONNEES_R-3&&*(tab+k)!='\n'&&*(tab+k)!='\r')
+	while(compteur<=NBR_COORDONNEES_R-5&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
 		if(token != compteur || *(tab+k) == '.')
 			while (*(tab+k)!='\t'&&*(tab+k)!=' '&&*(tab+k)!='\n' &&*(tab+k)!='\r')
@@ -134,7 +134,7 @@ int robot_avancement(int k, char *tab)
 			k++;
 		else
 		{
-			if (compteur != NBR_COORDONNEES_R-3)
+			if (compteur != NBR_COORDONNEES_R-5)
 			{
 				k++;
 				compteur++;
@@ -203,15 +203,17 @@ void robot_free_robots()
 
 STR_ROBOT** robot_vrot(int i, double*angle)
 {
-	double vrot = *(angle) / DELTA_T;
-	if (fabs(vrot) > VROT_MAX)
+	
+	double* vrot = &robot[i]->vrot;
+	*vrot = *(angle) / DELTA_T;
+	if (fabs(*(vrot)) > VROT_MAX)
 	{			
-		if(vrot > 0)
-			vrot = VROT_MAX;
+		if(*vrot > 0)
+			*vrot = VROT_MAX;
 		else
-			vrot = -VROT_MAX;
+			*vrot = -VROT_MAX;
 	}
-	robot[i]->angle = robot[i]->angle + vrot*DELTA_T;
+	robot[i]->angle = robot[i]->angle + *(vrot)*DELTA_T;
 	
 	return robot;
 }
@@ -248,18 +250,24 @@ double robot_vtran(double L)
 	return vtran;
 }
 
-STR_ROBOT** robot_deplacement(S2D rob, int i)
+STR_ROBOT** robot_deplacement(S2D rob, int i, bool rp)
 {
 	S2D part;
 	double * delta_gamma = NULL;
 	double ecart_angle;
 	delta_gamma = &ecart_angle;
-	double vtran;
-	part.x = robot[i]->occup.x;  
-	part.y = robot[i]->occup.y;
+	if (rp)
+	{
+		part.x = robot[i]->occup.x;  
+		part.y = robot[i]->occup.y;
+	}
+	else
+	{
+		part = util_deplacement(rob , robot[i]->angle , 50000);
+	}
 	double L = 0;
 	L = util_distance(rob, part);
-	vtran = robot_vtran(L);
+	robot[i]->vtran = robot_vtran(L);
 	util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
 	
 	if(fabs(*delta_gamma) > EPSIL_ZERO)
@@ -271,7 +279,7 @@ STR_ROBOT** robot_deplacement(S2D rob, int i)
 			else
 			{
 				robot_vrot(i,delta_gamma);
-				rob = util_deplacement(rob, robot[i]->angle, vtran*DELTA_T);
+				rob = util_deplacement(rob, robot[i]->angle, (robot[i]->vtran)*DELTA_T);
 				robot[i]->pos_x=rob.x;
 				robot[i]->pos_y=rob.y;	
 			}
@@ -279,10 +287,13 @@ STR_ROBOT** robot_deplacement(S2D rob, int i)
 	}
 	else
 	{
-		rob = util_deplacement(rob, robot[i]->angle, vtran*DELTA_T);
+		rob = util_deplacement(rob, robot[i]->angle, robot[i]->vtran*DELTA_T);
 		robot[i]->pos_x=rob.x;
 		robot[i]->pos_y=rob.y;
 	}
+	
+	
+	
 	return robot;
 }
 
@@ -319,3 +330,61 @@ STR_ROBOT** robot_color(int i, int color)
 	return robot;
 }
 
+S2D robot_alignement(S2D init, S2D rob, S2D cible, bool rp, double rayon, double angle)
+{
+	if(!rp)
+	{
+		//~ printf("rob.x = %lf \n", rob.x);
+		//~ printf("rob.y = %lf \n", rob.y);
+		//~ printf("init.x = %lf \n", init.x);
+		//~ printf("init.y = %lf \n", init.y);
+	}
+	double L, delta_d, D, dist, deplacement;
+	double * new;
+	new = &deplacement;
+	delta_d = util_distance(init,rob);
+	D = util_distance(rob,cible);
+	L = util_distance(init,cible);
+	if (rp)
+	{
+		dist = R_ROBOT + rayon;
+	}
+	else
+	{
+		dist = 2*R_ROBOT;
+	}
+		
+	if(dist == D)
+		return rob;
+	//~ if (!rp)
+		//~ printf("%d \n" , util_inner_triangle(delta_d,D,L,dist,new));
+	if (util_inner_triangle(delta_d,D,L,dist,new))
+	{
+		rob = util_deplacement(init, angle, deplacement);
+	}
+	else if (!rp)
+		return init;
+	
+	return rob;
+	
+}
+
+STR_ROBOT** robot_recul(S2D rob, int i)
+{
+	robot[i]->pos_x=rob.x;
+	robot[i]->pos_y=rob.y;
+	return robot;
+}
+
+STR_ROBOT** robot_manuel(double translat , double rotat, int i)
+{
+	double angle;
+	angle = rotat*DELTA_T;
+	robot[i]->angle = 	robot[i]->angle + angle;
+		
+	S2D init = {robot[i]->pos_x,robot[i]->pos_y};
+	init = util_deplacement(init , robot[i]->angle , translat*DELTA_T);
+	robot_recul(init,i);
+	return robot;
+	
+}
