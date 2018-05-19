@@ -167,11 +167,11 @@ bool robot_collision()
 			if ( sqrt( dist_x*dist_x + dist_y*dist_y) < 2*R_ROBOT)
 			{
 				error_collision(ROBOT_ROBOT, j+1 , j+k+1);
-				return 1;
+				return TRUTH;
 			}
 		}
 	}
-	return 0;
+	return FALSE;
 }
 
 STR_ROBOT** robot_donnees()
@@ -186,7 +186,7 @@ STR_ROBOT** robot_donnees()
 		robot[z]->pos_x = *(pointer_r+(z*NBR_COORDONNEES_R));
 		robot[z]->pos_y = *(pointer_r+((z*NBR_COORDONNEES_R)+1));
 		robot[z]->angle = *(pointer_r+((z*NBR_COORDONNEES_R)+2));
-		robot[z]->actif = 0;
+		robot[z]->actif = DESACTIVATION;
 	}
 	
 	return robot;
@@ -208,7 +208,7 @@ STR_ROBOT** robot_vrot(int i, double*angle)
 	*vrot = *(angle) / DELTA_T;
 	if (fabs(*(vrot)) > VROT_MAX)
 	{			
-		if(*vrot > 0)
+		if(*vrot > NUL)
 			*vrot = VROT_MAX;
 		else
 			*vrot = -VROT_MAX;
@@ -223,26 +223,26 @@ double robot_temps_rot_calcul(double *angle)
 	double vrot = *(angle) / DELTA_T;
 	if (fabs(vrot) > VROT_MAX)
 	{			
-		if(vrot > 0)
+		if(vrot > NUL)
 			vrot = VROT_MAX;
 		else
 			vrot = -VROT_MAX;
 	}
 	double temps;
-	if(vrot != 0)
+	if(vrot != NUL)
 		temps = fabs(*(angle)/(vrot));
 	else
-		temps = 0;
+		temps = NUL;
 	return temps;
 }
 
 double robot_vtran(double L)
 {
 	double vtran;
-	vtran = L/(DELTA_T*10);
+	vtran = L/(DELTA_T*REDUCTEUR);
 	if( fabs(vtran) > VTRAN_MAX)
 	{
-		if (vtran > 0)
+		if (vtran > NUL)
 			vtran = VTRAN_MAX;
 		else
 			vtran = -VTRAN_MAX;
@@ -258,11 +258,9 @@ STR_ROBOT** robot_deplacement(S2D rob, int i)
 	delta_gamma = &ecart_angle;
 	part.x = robot[i]->occup.x;  
 	part.y = robot[i]->occup.y;
-	double L = 0;
+	double L = INITIALISATION;
 	L = util_distance(rob, part);
-	//~ printf ("L = %lf \n", L);
 	robot[i]->vtran = robot_vtran(L);
-	//~ printf("v-tran = %lf \n" , robot[i]->vtran);
 	util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
 	
 	if(fabs(*delta_gamma) > EPSIL_ZERO)
@@ -292,12 +290,10 @@ STR_ROBOT** robot_deplacement(S2D rob, int i)
 	return robot;
 }
 
-STR_ROBOT ** robot_activation_desactivation(int i, bool a)
+STR_ROBOT ** robot_activation_desactivation(int i, bool etat)
 {
-	if (a)
-		robot[i]->actif = 1;
-	else
-		robot[i]->actif = 0;
+		robot[i]->actif = etat;
+	
 	return robot;
 }
 
@@ -310,24 +306,12 @@ STR_ROBOT ** robot_occupation(double x , double y , int i)
 
 STR_ROBOT** robot_color(int i, int color)
 {
-	if (color == BLUE)
-	{
-		robot[i]->color = BLUE;
-	}
-	if (color == BLACK)
-	{
-		robot[i]->color = BLACK;
-	}
-	if (color == RED)
-	{
-		robot[i]->color = RED;
-	}
+	robot[i]->color = color;
 	return robot;
 }
 
 S2D robot_alignement(S2D init, S2D rob, S2D cible, bool rp, double rayon, double angle)
 {
-		//~ printf("bouh \n");
 
 	double L, delta_d, D, dist, deplacement;
 	double * new;

@@ -15,6 +15,12 @@
 #define BLUE					2
 #define BLACK					0
 #define RED					    1
+#define DESACTIVATION			0
+#define ACTIVATION				1
+#define NUL						0
+#define TRUTH					1
+#define FALSE					0
+#define REDUCTEUR				10
 
 typedef struct Robot STR_ROBOT;
 struct Robot

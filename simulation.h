@@ -14,8 +14,6 @@
 #define FIN						1
 #define ROBOT					0
 #define PARTICULE				1
-#define ACTIVATION				1
-#define DESACTIVATION			0
 #define TEMPS_MAX				227
 
 

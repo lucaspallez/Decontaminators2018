@@ -12,6 +12,9 @@
 #define INIT_TOKEN_R			5
 #define INIT_TOKEN_T			2
 #define NBR_COORDONNEES_P		5
+#define DECOMPOSEE				0
+#define CIBLEE					1
+#define NON_CIBLEE				0
 
 
 typedef struct Particule STR_PARTICULE;
