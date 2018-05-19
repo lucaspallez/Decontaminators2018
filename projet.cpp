@@ -258,24 +258,29 @@ void mouse_CB(int mouse_button, int mouse_state, int abs_mouse_x, int abs_mouse_
 				double dist = util_distance(str_robot, mouse);
 				if(dist <= R_ROBOT)
 				{
-					if(robot[i]->color != RED)
-					{
 						robot[i]->color = RED;
 						robot_selected = true;
-					}
 				}
 				else
 				{
 					robot[i]->color = BLACK;
-					robot_selected = false;
+					if(robot[i]->color == RED)
+						robot_selected = false;
+					v_trans = 0;
+					v_rot = 0;
 				}
-				
 			}
+			sprintf(str_trans, "Translation: %.3lf", v_trans);
+			robot_text_trans->set_text(str_trans);
+			sprintf(str_rot, "Rotation:     %.3lf", v_rot);
+			robot_text_rot->set_text(str_rot);
+			printf("\n");
 		}
 }
 
 void keyboard_CB(int key,int x, int y)
 {
+	printf("%d\n", robot_selected);
 	if(robot_selected)
 		switch(key)
 		{
