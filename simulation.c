@@ -165,7 +165,7 @@ void simulation_boucle(double translat, double rotat)
 							if (token.indice != LIBRE)
 							{
 									particule = particule_ciblage_deciblage(i , ACTIVATION);
-									printf(" %d rayon particule = %lf \n", token.indice ,particule[i]->rayon);
+									//~ printf(" %d rayon particule = %lf \n", token.indice ,particule[i]->rayon);
 									robot = robot_activation_desactivation(token.indice, ACTIVATION);
 									robot = robot_occupation(part.x , part.y, token.indice);
 									rob.x = robot[token.indice]->pos_x;
@@ -236,9 +236,13 @@ void simulation_boucle(double translat, double rotat)
 		}
 		else
 		{
+			printf("bouh \n");
+			rob.x = robot[i]->pos_x;
+			rob.y = robot[i]->pos_y;
 			S2D cible = {robot[j]->pos_x,robot[j]->pos_y};
 			if (util_ecart_angle(rob, robot[i]->angle, cible , delta_gamma))
 			{
+				//~ printf("ecart_angle %lf" , ecart_angle);
 				if (fabs(*delta_gamma) < (M_PI/2))
 				{
 					robot_manuel(0,VROT_MAX,i);
@@ -272,11 +276,11 @@ void simulation_boucle(double translat, double rotat)
 	}
 	simulation_manuel(translat,rotat);
 	
-	for (int i = 0 ; i < nb_particules; i++)
-	{
-		if(particule[i])
-			printf("%lf  %d \n", particule[i]->rayon, particule[i]->ciblee);
-	}
+	//~ for (int i = 0 ; i < nb_particules; i++)
+	//~ {
+		//~ if(particule[i])
+			//~ printf("%lf  %d \n", particule[i]->rayon, particule[i]->ciblee);
+	//~ }
 }
 
 int simulation_robot_colision_boucle(int i, bool rp, bool etat)
@@ -325,9 +329,19 @@ int simulation_robot_colision_boucle(int i, bool rp, bool etat)
 					
 					dist_x = x2-x1;
 					dist_y = y2-y1;
-					if( sqrt( dist_x*dist_x + dist_y*dist_y) < 2*R_ROBOT)
+					if(etat == FIN)
 					{
-						return k;
+						if( sqrt( dist_x*dist_x + dist_y*dist_y) < 2*R_ROBOT)
+						{
+							return k;
+						}
+					}
+					else
+					{
+						if( sqrt( dist_x*dist_x + dist_y*dist_y) <= 2*R_ROBOT+EPSIL_ZERO)
+						{
+							return k;
+						}
 					}
 				}
 			}
