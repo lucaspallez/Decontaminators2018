@@ -81,6 +81,7 @@ void record_CB(int control)
 		file_open = CLOSED;
 	}
 }
+
 void simulation(void)
 {
 	simulation_boucle(v_trans, v_rot);
@@ -163,7 +164,7 @@ void idle(void)
 {
 	if(glutGetWindow() != main_window)
 		glutSetWindow(main_window);
-	if(sim_running)	simulation();
+	if(sim_running && nb_particules != 0)	simulation();
 	if(nb_particules == 0)
 	{
 		sim_running = 0;
@@ -236,7 +237,8 @@ void start_CB(int control)
 
 void step_CB(int control)
 {
-	simulation();
+	if(nb_particules != 0)
+		simulation();
 	sim_start_button->set_name("Start");
 }
 
@@ -326,6 +328,7 @@ void control_type_CB(int control_type)
 		for(int i = 0; i < nb_robots ; i++)
 			robot[i]->color = BLACK;
 }
+
 void gui_init(void)
 {	
 	//FIRST COLUMN
