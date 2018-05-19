@@ -85,9 +85,7 @@ bool util_ecart_angle(S2D a, double alpha, S2D b, double *p_ecart_angle)
 	util_range_angle(alpha_p);
 	if(dist > EPSIL_ZERO)
 	{
-		*p_ecart_angle = fabs(util_angle(a,b) - alpha);
-		if(*p_ecart_angle > M_PI)
-			*p_ecart_angle = 2*M_PI - *p_ecart_angle;
+		*p_ecart_angle = util_angle(a,b) - alpha;
 		util_range_angle(p_ecart_angle);
 		return 1;
 	}
@@ -97,7 +95,7 @@ bool util_ecart_angle(S2D a, double alpha, S2D b, double *p_ecart_angle)
 
 bool util_alignement(S2D a, double alpha, S2D b)
 {
-	if(util_distance(a,b) > EPSIL_ZERO && (fabs(util_angle(a,b) - alpha) < EPSIL_ALIGNEMENT))
+	if(util_distance(a,b)>EPSIL_ZERO&&(fabs(util_angle(a,b)-alpha)<EPSIL_ALIGNEMENT))
 		return 1;
 	else
 		return 0;
@@ -105,7 +103,7 @@ bool util_alignement(S2D a, double alpha, S2D b)
 
 bool util_inner_triangle(double la, double lb, double lc, double lb_new, double * p_la_new)
 {
-		if(la > EPSIL_ZERO && lc > EPSIL_ZERO && lb > EPSIL_ZERO && lb_new <= lc && lb_new >= lb)
+		if(la >EPSIL_ZERO&&lc>EPSIL_ZERO&&lb>EPSIL_ZERO&&lb_new<=lc&&lb_new>=lb)
 		{
 			double cosbeta;
 			double discriminant;

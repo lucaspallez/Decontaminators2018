@@ -45,8 +45,7 @@ bool
 // le paramètre de sortie p_dist est la distance entre les centres de a et b 
 bool  
       util_collision_cercle(C2D a, C2D b, double * p_dist); 
-// renvoie la position obtenue après déplacement du point p d'une distance dist
-3/3   
+// renvoie la position obtenue après déplacement du point p d'une distance dist  
 // dans la direction définie par l'angle alpha
 S2D  
       util_deplacement(S2D p, double alpha, double dist); 
