@@ -23,6 +23,7 @@ extern "C"
 #define BLACK				0
 #define OPEN				1
 #define CLOSED				0
+#define AUTOMATIC			0
 
 namespace
 {
@@ -215,9 +216,7 @@ void save_CB(int control)
 	for(int i = 0; i<nb_particules; i++)
 	{
 		fprintf(save_ptr,"%lf %lf %lf %lf\n", particule[i]->energie,
-				particule[i]->rayon, 
-				particule[i]->pos_x,
-				particule[i]->pos_y);
+				particule[i]->rayon, particule[i]->pos_x, particule[i]->pos_y);
 	}
 	fprintf(save_ptr, "FIN_LISTE\n");
 	fclose(save_ptr);
@@ -227,9 +226,7 @@ void start_CB(int control)
 {
 	//START SIMMULATION
 	if(sim_running == NOT_RUNNING)
-	{
 		sim_running = RUNNING;
-	}
 	else
 	{
 		sim_running = NOT_RUNNING;
@@ -241,7 +238,6 @@ void step_CB(int control)
 {
 	simulation();
 	sim_start_button->set_name("Start");
-
 }
 
 void mouse_CB(int mouse_button, int mouse_state, int abs_mouse_x, int abs_mouse_y)
@@ -249,7 +245,7 @@ void mouse_CB(int mouse_button, int mouse_state, int abs_mouse_x, int abs_mouse_
 	if(control_type_group->get_int_val() == 1)
 		if(mouse_button == GLUT_LEFT_BUTTON && mouse_state == GLUT_DOWN)
 		{
-			//conversion absolu / relatif
+			//conversion absolu/relatif
 			mouse.x = (double) 2*DMAX*abs_mouse_x/width - DMAX;
 			mouse.y = (double) -2*DMAX*abs_mouse_y/height + DMAX;
 			for(int i = 0; i < nb_robots; i++)
@@ -274,36 +270,30 @@ void mouse_CB(int mouse_button, int mouse_state, int abs_mouse_x, int abs_mouse_
 			robot_text_trans->set_text(str_trans);
 			sprintf(str_rot, "Rotation:     %.3lf", v_rot);
 			robot_text_rot->set_text(str_rot);
-			printf("\n");
 		}
 }
 
 void keyboard_CB(int key,int x, int y)
 {
-	printf("%d\n", robot_selected);
 	if(robot_selected)
 		switch(key)
 		{
 		case GLUT_KEY_UP:
-			//vtrans +0.250 if < 0.750
 			if(v_trans <= 0.5)	v_trans += 0.25;
 			sprintf(str_trans, "Translation: %.3lf", v_trans);
 			robot_text_trans->set_text(str_trans);
 			break;
 		case GLUT_KEY_DOWN:
-			//vtrans -0.250 if > -0.750
 			if(v_trans >= -0.5)	v_trans -= 0.25;
 			sprintf(str_trans, "Translation: %.3lf", v_trans);
 			robot_text_trans->set_text(str_trans);
 			break;
 		case GLUT_KEY_LEFT:
-			//vrot +0.125 if < 0.500
 			if(v_rot <= 0.25)	v_rot += 0.25;
 			sprintf(str_rot, "Rotation:     %.3lf", v_rot);
 			robot_text_rot->set_text(str_rot);
 			break;
 		case GLUT_KEY_RIGHT:
-			//vrot -0.125 if > 0.500
 			if(v_rot >= -0.25)	v_rot -= 0.25;
 			sprintf(str_rot, "Rotation:     %.3lf", v_rot);
 			robot_text_rot->set_text(str_rot);
@@ -330,6 +320,12 @@ void display_init(void)
 	GLUI_Master.set_glutIdleFunc(idle);
 }
 
+void control_type_CB(int control_type)
+{
+	if(control_type == AUTOMATIC)
+		for(int i = 0; i < nb_robots ; i++)
+			robot[i]->color = BLACK;
+}
 void gui_init(void)
 {	
 	//FIRST COLUMN
@@ -370,12 +366,12 @@ void gui_init(void)
 	
 	control_mode_panel = glui->add_panel("Control mode");
 	control_type_group = glui->add_radiogroup_to_panel(control_mode_panel,
-													   &control_type);
+													   &control_type, control_type,
+													   control_type_CB);
 	glui->add_radiobutton_to_group(control_type_group, "Automatic");
 	glui->add_radiobutton_to_group(control_type_group, "Manual");
 	
 	robot_control_panel = glui->add_panel("Robot Control");
-	
 	robot_text_trans = glui->add_statictext_to_panel(robot_control_panel,
 													 "Translation: ");
 	
