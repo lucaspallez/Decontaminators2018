@@ -260,9 +260,9 @@ STR_ROBOT** robot_deplacement(S2D rob, int i)
 	part.y = robot[i]->occup.y;
 	double L = 0;
 	L = util_distance(rob, part);
-	printf ("L = %lf \n", L);
+	//~ printf ("L = %lf \n", L);
 	robot[i]->vtran = robot_vtran(L);
-	printf("v-tran = %lf \n" , robot[i]->vtran);
+	//~ printf("v-tran = %lf \n" , robot[i]->vtran);
 	util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
 	
 	if(fabs(*delta_gamma) > EPSIL_ZERO)
@@ -327,7 +327,7 @@ STR_ROBOT** robot_color(int i, int color)
 
 S2D robot_alignement(S2D init, S2D rob, S2D cible, bool rp, double rayon, double angle)
 {
-		printf("bouh \n");
+		//~ printf("bouh \n");
 
 	double L, delta_d, D, dist, deplacement;
 	double * new;

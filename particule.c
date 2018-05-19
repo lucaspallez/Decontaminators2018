@@ -11,7 +11,6 @@
 static double nb_particules;
 static double *pointer_p;
 static STR_PARTICULE **particule;
-static int num = 1;
 STR_PARTICULE* token;
 
 double * particule_lecture_fichier(const char *file_name)
@@ -199,8 +198,7 @@ STR_PARTICULE** particule_donnees()
 		particule[z]->rayon = *(pointer_p+((z*NBR_COORDONNEES_P)+1));
 		particule[z]->pos_x = *(pointer_p+((z*NBR_COORDONNEES_P)+2));
 		particule[z]->pos_y = *(pointer_p+((z*NBR_COORDONNEES_P)+3));
-		particule[z]->num = num;
-		num++;	
+		particule[z]->ciblee = 0;
 	}
 	return particule;
 }
@@ -215,10 +213,9 @@ STR_PARTICULE** particule_decomposition(int i)
 			{
 				int k=nb_particules;
 				nb_particules++;
-				//~ printf("bruh \n");
 				particule_reallocation(k,1);
 				particule[k] = malloc(sizeof(STR_PARTICULE));
-				//~ printf("brah \n");
+				particule[k]->ciblee = 0;
 				particule[k]->rayon = (particule[i]->rayon)*R_PARTICULE_FACTOR;
 				particule[k]->energie = particule[i]->energie*E_PARTICULE_FACTOR;
 				if (j == 0 || j == 1)
@@ -228,9 +225,7 @@ STR_PARTICULE** particule_decomposition(int i)
 				if (j == 0 || j == 3)
 					particule[k]->pos_y = (particule[i]->pos_y+particule[k]->rayon);
 				else
-					particule[k]->pos_y = (particule[i]->pos_y-particule[k]->rayon);
-				particule[k]->num = num;
-				++num;	
+					particule[k]->pos_y = (particule[i]->pos_y-particule[k]->rayon);	
 				//~ printf("%lf \n" , particule[k]->rayon);
 			}
 			particule_desintegration(i);
@@ -238,7 +233,6 @@ STR_PARTICULE** particule_decomposition(int i)
 			
 		}
 	}
-	//~ printf("wut \n");
 	return particule;
 }
 
@@ -287,17 +281,6 @@ STR_PARTICULE** particule_tri()
 	return particule;
 }
 
-int particule_recherche (int k)
-{
-	for (int i = 0 ; i < nb_particules ; i++)
-	{
-		if (particule[i]->num==k)
-		{
-			return i;
-		}
-	}
-	return -1;
-}
 
 double particule_reallocation(int k , bool a)
 {
@@ -312,7 +295,7 @@ double particule_reallocation(int k , bool a)
 			token[i]->energie = particule[i]->energie;
 			token[i]->pos_x = particule[i]->pos_x;
 			token[i]->pos_y = particule[i]->pos_y;
-			token[i]->num = particule[i]->num;
+			token[i]->ciblee = particule[i]->ciblee;
 			free(particule[i]);
 			particule[i] = NULL;
 			
@@ -324,8 +307,8 @@ double particule_reallocation(int k , bool a)
 			particule[i]->rayon=token[i]->rayon;
 			particule[i]->energie=token[i]->energie;
 			particule[i]->pos_x=token[i]->pos_x;
-			particule[i]->pos_y=token[i]->pos_y; 
-			particule[i]->num = token[i]->num;
+			particule[i]->ciblee=token[i]->ciblee;
+			particule[i]->pos_y=token[i]->pos_y;
 			free(token[i]);
 			token[i]=NULL;
 		}
@@ -351,11 +334,18 @@ double particule_reallocation(int k , bool a)
 STR_PARTICULE ** particule_desintegration(int i)
 {
 	particule[i]->rayon=0;
+	particule[i]->ciblee = 0;
 	return particule;
 }
 
 
 STR_PARTICULE** particule_get_particules()
 {
+	return particule;
+}
+
+STR_PARTICULE** particule_ciblage_deciblage(int i , bool etat)
+{
+	particule[i]->ciblee = etat;
 	return particule;
 }

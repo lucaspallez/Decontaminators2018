@@ -22,7 +22,7 @@ struct Particule
 	double rayon;
 	double pos_x;
 	double pos_y;
-	int num;
+	bool ciblee;
 };
 
 double *particule_lecture_fichier(const char *fichier);
@@ -33,8 +33,9 @@ STR_PARTICULE** particule_donnees();
 STR_PARTICULE** particule_decomposition(int i);
 void particule_free_particules();
 STR_PARTICULE** particule_tri();
-int particule_recherche(int k);
 double particule_reallocation(int k ,bool a);
 STR_PARTICULE** particule_desintegration(int i);
 STR_PARTICULE** particule_get_particules();
+STR_PARTICULE** particule_ciblage_deciblage(int i , bool etat);
+
 #endif
