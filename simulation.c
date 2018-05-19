@@ -118,66 +118,11 @@ void simulation_boucle(double translat, double rotat)
 		//~ printf("%lf \n", particule[i]->rayon);
 	//~ }
 
-	for (int i=0 ; i < nb_robots ; i++)
-	{
-		S2D rob = {0,0};
-		S2D part= {0,0};
-		rob.x = robot[i]->pos_x;
-		rob.y = robot[i]->pos_y;
-		robot[i]->vrot=0;
-		robot[i]->vtran=0;
-		int k = simulation_robot_colision_boucle(i, 1);
-		//~ int j = simulation_robot_colision_boucle(i, 0);
-		
-		if ( k != LIBRE)
-		{
-			//~ simulation_alignement(rob, i);
-			robot = robot_activation_desactivation(i, 1);
-			part.x = particule[k]->pos_x;
-			part.y = particule[k]->pos_y;
-			robot_occupation(part.x , part.y , i);
-			util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
 
-			
-			if(fabs(*delta_gamma) > EPSIL_ZERO)
-			{
-				//~ printf("%lf \n" , *delta_gamma);
-				robot = robot_vrot(i,delta_gamma);
-				
-			}
-			else
-			{
-				robot = robot_activation_desactivation(i, 0);
-				particule = particule_desintegration(k);
-				if (robot[i]->color != RED)
-					robot = robot_color(i , BLUE);
-				//~ nb_particules = particule_reallocation(0);
-			}
-		}
-		else //if (j == LIBRE)
-		{
-			if (robot[i]->actif)
-			{
-				if(rob.x - robot[i]->occup.x < EPSIL_ZERO && rob.y - robot[i]->occup.y < EPSIL_ZERO)
-					robot = robot_activation_desactivation(i,0);
-				else
-				{
-					robot = robot_deplacement(rob, i, 1);
-					simulation_alignement(rob,i);
-				}
-			}
-		}
-		//~ else
-		//~ {
-			//~ double alpha = (((double) rand()/RAND_MAX))*M_PI;
-			//~ robot = robot_vrot(i, &alpha);
-			//~ robot = robot_deplacement(rob, i , 0);
-			//~ simulation_alignement(rob, i);
-		//~ }
-	}
-	// EDITION DE BUT
+// EDITION DE BUT
 	for ( int i = 0 ; i< nb_particules ; i++)
 	{
+		token.indice = LIBRE;
 		if(particule[i])
 		{
 			if(particule[i]->rayon > 0)
@@ -200,47 +145,131 @@ void simulation_boucle(double translat, double rotat)
 						//~ printf ("%lf \n" , temps_tot[k]);
 					}
 				}
-					token.t = 10000000000000;
-					for(int k = 0 ; k < nb_robots; k++)
+				token.t = TEMPS_MAX;
+				for(int k = 0 ; k < nb_robots; k++)
+				{
+					if (!robot[k]->actif)
 					{
-						if (!robot[k]->actif)
+						if (temps_tot[k] < token.t)
 						{
-							if (temps_tot[k] < token.t)
-							{
-								token.t = temps_tot[k];
-								token.indice = k;
-							}
+							token.t = temps_tot[k];
+							token.indice = k;
 						}
 					}
-				if (!robot[token.indice]->actif)
-				{
-					
-					robot = robot_activation_desactivation(token.indice, 1);
-					robot = robot_occupation(part.x , part.y, token.indice);
-					rob.x = robot[token.indice]->pos_x;
-					rob.y = robot[token.indice]->pos_y;
-					robot = robot_deplacement(rob,token.indice, 1);
-					simulation_alignement(rob,token.indice);
-					
-
 				}
+					if (token.indice != LIBRE)
+					{
+						robot = robot_activation_desactivation(token.indice, ACTIVATION);
+						robot = robot_occupation(part.x , part.y, token.indice);
+						rob.x = robot[token.indice]->pos_x;
+						rob.y = robot[token.indice]->pos_y;
+						//~ robot = robot_deplacement(rob,token.indice);
+						//~ simulation_alignement(rob,token.indice);
+					}					
 			}
 		}
 	}
+
+
+
+
+	for (int i=0 ; i < nb_robots ; i++)
+	{
+		S2D rob = {0,0};
+		S2D part= {0,0};
+		rob.x = robot[i]->pos_x;
+		rob.y = robot[i]->pos_y;
+		robot[i]->vrot=0;
+		robot[i]->vtran=0;
+		int k = simulation_robot_colision_boucle(i, PARTICULE, DEBUT);
+		//~ int j = simulation_robot_colision_boucle(i, ROBOT ,DEBUT);
+		
+		if ( k != LIBRE)
+		{
+			robot = robot_activation_desactivation(i, ACTIVATION);
+			part.x = particule[k]->pos_x;
+			part.y = particule[k]->pos_y;
+			robot_occupation(part.x , part.y , i);
+			util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
+
+			
+			if(fabs(*delta_gamma) > EPSIL_ZERO)
+			{
+				//~ printf("%lf \n" , *delta_gamma);
+				robot = robot_vrot(i,delta_gamma);
+				
+			}
+			else
+			{
+				robot = robot_activation_desactivation(i, DESACTIVATION);
+				particule = particule_desintegration(k);
+				if (robot[i]->color != RED)
+					robot = robot_color(i , BLUE);
+			}
+		}
+		else //if (j == LIBRE)
+		{
+			if (robot[i]->actif)
+			{
+				S2D part = {robot[i]->occup.x , robot[i]->occup.y};
+				double distance = util_distance(rob , part);
+				if(distance < R_PARTICULE_MIN)
+				{
+					robot = robot_activation_desactivation(i,DESACTIVATION);
+				}
+				else
+				{
+					//~ printf ("deplacement \n");
+					robot = robot_deplacement(rob, i);
+					simulation_alignement(rob,i);
+				}
+			}
+		}
+		//~ else
+		//~ {
+			//~ S2D cible = {robot[j]->pos_x,robot[j]->pos_y};
+			//~ if (util_ecart_angle(rob, robot[i]->angle, cible , delta_gamma))
+			//~ {
+				//~ if (fabs(*delta_gamma) < (M_PI/2))
+				//~ {
+					//~ simulation_alignement(rob, i);
+					//~ robot = robot_recul(rob, i);
+					//~ robot_manuel(0,VROT_MAX,i);
+					//~ simulation_alignement(rob, i);
+				//~ }
+				//~ else
+				//~ {
+					//~ simulation_alignement(rob, i);
+					//~ robot = robot_recul(rob, i);
+					//~ robot_manuel(0.01,0,i);
+					//~ simulation_alignement(rob, i);
+				//~ }
+			//~ }
+		//~ }
+	}
+	
+	printf ("---- \n");
 	for( int i =0 ; i< nb_robots ; i++)
 	{
-		int j = simulation_robot_colision_boucle(i,0);
-		if (j != LIBRE)
-		{	
-			S2D rob = {robot[i]->pos_x, robot[i]->pos_y};
-			robot_manuel(VTRAN_MAX,VROT_MAX,i);
-			simulation_alignement(rob, i);
-		}
+		printf("%d \n" , i );
+		printf("v-rot = %lf \n" , robot[i]->vrot);
+		printf("actif %d \n" , robot[i]->actif);
+		
+		
+		
+		//~ int j = simulation_robot_colision_boucle(i,ROBOT,FIN);
+		//~ int k = simulation_robot_colision_boucle(i,PARTICULE,DEBUT);
+		//~ if (j != LIBRE && k == LIBRE)
+		//~ {	
+			//~ S2D rob = {robot[i]->pos_x, robot[i]->pos_y};
+			//~ robot_manuel(0,0,i);
+			//~ simulation_alignement(rob, i);
+		//~ }
 	}
 	simulation_manuel(translat,rotat);
 }
 
-int simulation_robot_colision_boucle(int i, bool rp)
+int simulation_robot_colision_boucle(int i, bool rp, bool etat)
 {
 	double x1, x2, y1, y2, r1;
  	double dist_x ,dist_y ;
@@ -259,9 +288,15 @@ int simulation_robot_colision_boucle(int i, bool rp)
 				dist_x = fabs(x2-x1);
 				dist_y = fabs(y2-y1);
 		
-				if( sqrt( dist_x*dist_x + dist_y*dist_y) <= r1+R_ROBOT+EPSIL_ZERO/10)
+				if (etat == FIN)
 				{
-					return k;
+					if(sqrt( dist_x*dist_x + dist_y*dist_y) < r1+R_ROBOT)
+						return k;
+				}
+				else
+				{
+					if(sqrt( dist_x*dist_x + dist_y*dist_y) <= r1+R_ROBOT)
+						return k;
 				}
 			}
 		}
@@ -280,8 +315,7 @@ int simulation_robot_colision_boucle(int i, bool rp)
 					
 					dist_x = x2-x1;
 					dist_y = y2-y1;
-			
-					if( sqrt( dist_x*dist_x + dist_y*dist_y) <= 2*R_ROBOT)
+					if( sqrt( dist_x*dist_x + dist_y*dist_y) < 2*R_ROBOT)
 					{
 						return k;
 					}
@@ -311,31 +345,43 @@ STR_PARTICULE **simulation_get_particules()
 
 void simulation_alignement(S2D rob,int i)
 {
-	int k;
-	for( int j = 0 ; j< nb_particules ; j++)
+	robot = robot_get_robots();
+	int j;
+	//~ k = simulation_robot_colision_boucle(i, PARTICULE , FIN);
+	j = simulation_robot_colision_boucle(i, ROBOT, FIN);
+	//~ printf("j= %d \n" , j);
+		
+	
+	while (/*k != LIBRE ||*/ j!= LIBRE)
 	{
-		k = simulation_robot_colision_boucle(i, 1);
-		if (k!=LIBRE)
+		j = simulation_robot_colision_boucle(i, ROBOT, FIN);
+		//~ printf("j= %d \n" , j);
+		if (j!=LIBRE)
 		{
 			S2D token = {robot[i]->pos_x, robot[i]->pos_y};
-			S2D cible = {particule[k]->pos_x, particule[k]->pos_y};
-			rob = robot_alignement(rob,token,cible,1,particule[k]->rayon,robot[i]->angle);
-			robot = robot_recul(rob, i);						
+			S2D cible = {robot[j]->pos_x, robot[j]->pos_y};
+			S2D init;
+			init = robot_alignement(rob,token,cible,ROBOT,R_ROBOT,robot[i]->angle);
+			robot = robot_recul(init, i);
+			//~ printf("%d \n", simulation_robot_colision_boucle(i, ROBOT, FIN));
+
+			//~ printf("buh \n");
+			//~ double alpha = (((double) rand()/RAND_MAX))*M_PI;
+			//~ robot = robot_vrot(i, &alpha);	
+
+							
 		}
-	}
-	k = LIBRE;
-	for (int j = 0 ; j< nb_robots ; j++)
-	{
-		k = simulation_robot_colision_boucle(i, 0);
-		if (k!=LIBRE)
-		{
-			S2D token = {robot[i]->pos_x, robot[i]->pos_y};
-			S2D cible = {robot[k]->pos_x, robot[k]->pos_y};
-			rob = robot_alignement(rob,token,cible,0,R_ROBOT,robot[i]->angle);
-			robot = robot_recul(rob, i);
-			double alpha = (((double) rand()/RAND_MAX))*M_PI;
-			robot = robot_vrot(i, &alpha);
-		}
+		//~ k = simulation_robot_colision_boucle(i, PARTICULE, FIN);
+		//~ if (k!=LIBRE)
+		//~ {
+			//~ S2D token = {robot[i]->pos_x, robot[i]->pos_y};
+			//~ S2D cible = {particule[k]->pos_x, particule[k]->pos_y};
+			//~ S2D init;
+			//~ init = robot_alignement(rob,token,cible,PARTICULE,particule[k]->rayon,robot[i]->angle);
+			//~ robot = robot_recul(init, i);
+
+		//~ }
+		
 	}
 }
 

@@ -239,7 +239,7 @@ double robot_temps_rot_calcul(double *angle)
 double robot_vtran(double L)
 {
 	double vtran;
-	vtran = L/DELTA_T;
+	vtran = L/(DELTA_T*10);
 	if( fabs(vtran) > VTRAN_MAX)
 	{
 		if (vtran > 0)
@@ -250,24 +250,19 @@ double robot_vtran(double L)
 	return vtran;
 }
 
-STR_ROBOT** robot_deplacement(S2D rob, int i, bool rp)
+STR_ROBOT** robot_deplacement(S2D rob, int i)
 {
 	S2D part;
 	double * delta_gamma = NULL;
 	double ecart_angle;
 	delta_gamma = &ecart_angle;
-	if (rp)
-	{
-		part.x = robot[i]->occup.x;  
-		part.y = robot[i]->occup.y;
-	}
-	else
-	{
-		part = util_deplacement(rob , robot[i]->angle , 50000);
-	}
+	part.x = robot[i]->occup.x;  
+	part.y = robot[i]->occup.y;
 	double L = 0;
 	L = util_distance(rob, part);
+	printf ("L = %lf \n", L);
 	robot[i]->vtran = robot_vtran(L);
+	printf("v-tran = %lf \n" , robot[i]->vtran);
 	util_ecart_angle(rob,robot[i]->angle,part,delta_gamma);
 	
 	if(fabs(*delta_gamma) > EPSIL_ZERO)
@@ -287,7 +282,7 @@ STR_ROBOT** robot_deplacement(S2D rob, int i, bool rp)
 	}
 	else
 	{
-		rob = util_deplacement(rob, robot[i]->angle, robot[i]->vtran*DELTA_T);
+		rob = util_deplacement(rob, robot[i]->angle, (robot[i]->vtran)*DELTA_T);
 		robot[i]->pos_x=rob.x;
 		robot[i]->pos_y=rob.y;
 	}
@@ -332,13 +327,8 @@ STR_ROBOT** robot_color(int i, int color)
 
 S2D robot_alignement(S2D init, S2D rob, S2D cible, bool rp, double rayon, double angle)
 {
-	if(!rp)
-	{
-		//~ printf("rob.x = %lf \n", rob.x);
-		//~ printf("rob.y = %lf \n", rob.y);
-		//~ printf("init.x = %lf \n", init.x);
-		//~ printf("init.y = %lf \n", init.y);
-	}
+		printf("bouh \n");
+
 	double L, delta_d, D, dist, deplacement;
 	double * new;
 	new = &deplacement;
@@ -353,18 +343,15 @@ S2D robot_alignement(S2D init, S2D rob, S2D cible, bool rp, double rayon, double
 	{
 		dist = 2*R_ROBOT;
 	}
-		
 	if(dist == D)
 		return rob;
-	//~ if (!rp)
-		//~ printf("%d \n" , util_inner_triangle(delta_d,D,L,dist,new));
 	if (util_inner_triangle(delta_d,D,L,dist,new))
 	{
-		rob = util_deplacement(init, angle, deplacement);
+		rob = util_deplacement(init, angle, deplacement-EPSIL_ZERO);
 	}
 	else if (!rp)
 		return init;
-	
+		
 	return rob;
 	
 }
@@ -388,3 +375,9 @@ STR_ROBOT** robot_manuel(double translat , double rotat, int i)
 	return robot;
 	
 }
+
+STR_ROBOT** robot_get_robots()
+{
+	return robot;
+}
+
