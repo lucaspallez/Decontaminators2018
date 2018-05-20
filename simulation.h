@@ -18,17 +18,23 @@
 
 
 int simulation_ouverture_fichier (const char *file_name);
-bool simulation_colision_robot_particule();
+bool simulation_collision_robot_particule_initiale();
 int simulation_get_nb_robots();
 int simulation_get_nb_particules();
 STR_ROBOT** simulation_get_robots();
 STR_PARTICULE** simulation_get_particules();
 void simulation_deplacement(S2D rob, int i);
 void simulation_boucle(double translat , double rotat);
-int simulation_robot_colision_boucle(int i, bool rp, bool etat);
+int simulation_robot_collision_boucle(int i, bool rp, bool etat);
 void simulation_alignement(S2D rob,int i);
 STR_ROBOT** simulation_manuel (double translat , double rotat);
 void simulation_edition_but();
+void simulation_boucle_collision_particule(int i,int k,S2D rob,double* ecart_angle);
+void simulation_boucle_robot_libre (int i, S2D rob);
+void simulation_boucle_collision_robot(int i,int j, double* delta_gamma, S2D rob);
+
+
+
 
 
 typedef struct Temps TEMPS;

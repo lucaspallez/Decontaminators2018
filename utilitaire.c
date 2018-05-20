@@ -95,13 +95,15 @@ bool util_ecart_angle(S2D a, double alpha, S2D b, double *p_ecart_angle)
 
 bool util_alignement(S2D a, double alpha, S2D b)
 {
-	if(util_distance(a,b)>EPSIL_ZERO&&(fabs(util_angle(a,b)-alpha)<EPSIL_ALIGNEMENT))
+	if(util_distance(a,b)>EPSIL_ZERO
+	   &&(fabs(util_angle(a,b)-alpha)<EPSIL_ALIGNEMENT))
 		return 1;
 	else
 		return 0;
 }
 
-bool util_inner_triangle(double la, double lb, double lc, double lb_new, double * p_la_new)
+bool util_inner_triangle(double la,double lb,double lc,double lb_new,
+						 double*p_la_new)
 {
 		if(la >EPSIL_ZERO&&lc>EPSIL_ZERO&&lb>EPSIL_ZERO&&lb_new<=lc&&lb_new>=lb)
 		{

@@ -36,7 +36,7 @@ STR_PARTICULE** particule_donnees();
 STR_PARTICULE** particule_decomposition(int i);
 void particule_free_particules();
 STR_PARTICULE** particule_tri();
-double particule_reallocation(int k ,bool a);
+double particule_reallocation(int k ,bool etat);
 STR_PARTICULE** particule_desintegration(int i);
 STR_PARTICULE** particule_get_particules();
 STR_PARTICULE** particule_ciblage_deciblage(int i , bool etat);

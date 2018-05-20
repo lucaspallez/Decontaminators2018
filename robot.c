@@ -14,7 +14,7 @@ static STR_ROBOT **robot;
 
 double * robot_lecture_fichier(const char *file_name)
 {
-	enum etats {NBR , DONNEES_R ,FIN_R, PARTICULE};
+	enum etats {NBR , DONNEES_R ,FIN_R, PARTICULE}; //LECTURE DONNEES ROBOTS
 	int etat = NBR;
 	int line_number = INITIALISATION;
 	int i ,k = INITIALISATION;
@@ -122,7 +122,7 @@ double robot_nombre_robots()
 
 int robot_avancement(int k, char *tab)
 {
-	int compteur=INITIALISATION;
+	int compteur=INITIALISATION; //LECTURE DONNEES ROBOTS
 	int token = INITIALISATION;
 	while(compteur<=NBR_COORDONNEES_R-5&&*(tab+k)!='\n'&&*(tab+k)!='\r')
 	{
@@ -149,7 +149,7 @@ int robot_avancement(int k, char *tab)
 
 bool robot_collision()
 {
-	double x1, x2, y1, y2;
+	double x1, x2, y1, y2; //DETECTION COLLISION INITIALES ROBOTS
 	for (int j = 0 ; j < nb_robots ; j++)
 	{
 		for (int k = 1 ; k < nb_robots - j ; k++)
@@ -174,7 +174,7 @@ bool robot_collision()
 	return FALSE;
 }
 
-STR_ROBOT** robot_donnees()
+STR_ROBOT** robot_donnees() //AFFECTATION DES DONNEES AU TABLEAU DE STRUCTURES
 {
 	robot = malloc(nb_robots*sizeof(STR_ROBOT));
 	for (int y = 0 ; y < nb_robots ; y++)
@@ -187,11 +187,13 @@ STR_ROBOT** robot_donnees()
 		robot[z]->pos_y = *(pointer_r+((z*NBR_COORDONNEES_R)+1));
 		robot[z]->angle = *(pointer_r+((z*NBR_COORDONNEES_R)+2));
 		robot[z]->actif = DESACTIVATION;
+		robot[z]->occup.x = OUT;
+		robot[z]->occup.y = OUT;
 	}
 	return robot;
 }
 
-void robot_free_robots()
+void robot_free_robots() //LIBERATION DU TABLEAU DE STRUCTURE EN CAS D'ERREUR
 {
 	for (int i=0 ; i< nb_robots ; i++)
 		free(robot[i]);
@@ -199,7 +201,7 @@ void robot_free_robots()
 	free(robot);
 }
 
-STR_ROBOT** robot_vrot(int i, double*angle)
+STR_ROBOT** robot_vrot(int i, double*angle)//DEPLACEMENT DU ROBOT EN ROTATION
 {
 	double* vrot = &robot[i]->vrot;
 	*vrot = *(angle) / DELTA_T;
@@ -214,7 +216,7 @@ STR_ROBOT** robot_vrot(int i, double*angle)
 	return robot;
 }
 
-double robot_temps_rot_calcul(double *angle)
+double robot_temps_rot_calcul(double *angle)//CALCUL TEMPS DE ROTATION
 {
 	double vrot = *(angle) / DELTA_T;
 	if (fabs(vrot) > VROT_MAX)
@@ -232,7 +234,7 @@ double robot_temps_rot_calcul(double *angle)
 	return temps;
 }
 
-double robot_vtran(double L)
+double robot_vtran(double L)//DEPLACEMENT DU ROBOT EN TRANSLATION
 {
 	double vtran;
 	vtran = L/(DELTA_T*REDUCTEUR);
@@ -246,7 +248,7 @@ double robot_vtran(double L)
 	return vtran;
 }
 
-STR_ROBOT** robot_deplacement(S2D rob, int i)
+STR_ROBOT** robot_deplacement(S2D rob, int i)//DEPLACEMENT DU ROBOT VERS SON BUT
 {
 	S2D part;
 	double * delta_gamma = NULL;
@@ -280,7 +282,7 @@ STR_ROBOT** robot_deplacement(S2D rob, int i)
 	}
 	return robot;
 }
-
+//FONCTIONS D'AFFECTATION
 STR_ROBOT ** robot_activation_desactivation(int i, bool etat)
 {
 		robot[i]->actif = etat;
@@ -303,7 +305,7 @@ STR_ROBOT** robot_color(int i, int color)
 
 S2D robot_alignement(S2D init,S2D rob,S2D cible,bool rp,double rayon,double angle)
 {
-	double L, delta_d, D, dist, deplacement;
+	double L, delta_d, D, dist, deplacement;//ALIGNEMENT DU ROBOT
 	double * new;
 	new = &deplacement;
 	delta_d = util_distance(init,rob);
@@ -328,7 +330,7 @@ S2D robot_alignement(S2D init,S2D rob,S2D cible,bool rp,double rayon,double angl
 		
 	return rob;
 }
-
+//FONCTION D'AFFECTATION
 STR_ROBOT** robot_recul(S2D rob, int i)
 {
 	robot[i]->pos_x=rob.x;
@@ -338,7 +340,7 @@ STR_ROBOT** robot_recul(S2D rob, int i)
 
 STR_ROBOT** robot_manuel(double translat , double rotat, int i)
 {
-	double angle;
+	double angle; //DEPLACEMENT MANUEL DU ROBOT
 	S2D init = {robot[i]->pos_x,robot[i]->pos_y};
 	angle = rotat*DELTA_T;
 	robot[i]->angle = 	robot[i]->angle + angle;

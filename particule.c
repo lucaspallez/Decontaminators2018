@@ -13,7 +13,7 @@ static double *pointer_p;
 static STR_PARTICULE **particule;
 STR_PARTICULE* token;
 
-double * particule_lecture_fichier(const char *file_name)
+double* particule_lecture_fichier(const char *file_name)//LECTURE DONNEES PARTICULES
 {
 	enum etats {SEARCH , NBP , DONNEES_P, FIN};
 	int etat = SEARCH;
@@ -132,7 +132,7 @@ double particule_nombre_particules()
 
 int particule_avancement(int k, char * tab)
 {
-	int compteur= INITIALISATION;
+	int compteur= INITIALISATION; //LECTURE DONNEES PARTICULES
 	int token = INITIALISATION;
 	
 	while(compteur<=NBR_COORDONNEES_P-1&&*(tab+k)!='\n'&&*(tab+k)!='\r')
@@ -159,7 +159,7 @@ int particule_avancement(int k, char * tab)
 	
 }
 
-bool particule_collision()
+bool particule_collision() //DETECTION COLLISION PARTICULES INITIALE
 {
 	double x1, x2, y1, y2, r1 , r2;
 	for (int j = 0 ; j < nb_particules ; j++)
@@ -185,7 +185,7 @@ bool particule_collision()
 	return 0;
 }
 
-STR_PARTICULE** particule_donnees()
+STR_PARTICULE**particule_donnees()//AFFECTATION DES DONNEES AU TABLEAU DE STRUCTURES
 {
 	particule = malloc(nb_particules*sizeof(STR_PARTICULE));
 	for (int y = 0 ; y < nb_particules ; y++)
@@ -203,7 +203,7 @@ STR_PARTICULE** particule_donnees()
 	return particule;
 }
 
-STR_PARTICULE** particule_decomposition(int i)
+STR_PARTICULE** particule_decomposition(int i) //DECOMPOSITION DES PARTICULES
 {
 	enum positions {TOP_RIGHT , BOT_RIGHT, BOT_LEFT, TOP_LEFT};
 	if( particule[i])
@@ -234,8 +234,7 @@ STR_PARTICULE** particule_decomposition(int i)
 	return particule;
 }
 
-
-void particule_free_particules()
+void particule_free_particules() //LIBERATION DU TABLEAU DE STRUCTURE PARTICULES
 {
 	for (int i=0 ; i< nb_particules ; i++)
 	{
@@ -244,7 +243,7 @@ void particule_free_particules()
 	free(particule);
 }
 
-STR_PARTICULE** particule_tri()
+STR_PARTICULE** particule_tri() //TRI DU TABLEAU PARTICULE PAR RAYONS DECROISSANTS
 {
 	token = malloc(sizeof(STR_PARTICULE));
 	int compteur;
@@ -275,10 +274,9 @@ STR_PARTICULE** particule_tri()
 	return particule;
 }
 
-
-double particule_reallocation(int k , bool a)
+double particule_reallocation(int k, bool etat) //ADAPTATION DE LA TAILLE DU TABLEAU
 {
-	if (a)
+	if (etat)
 	{
 		STR_PARTICULE ** token;
 		token = malloc(k*sizeof(STR_PARTICULE));
@@ -308,9 +306,7 @@ double particule_reallocation(int k , bool a)
 		}
 	}
 	else
-	{
 		for(int j = 0 ; j < k ; j++)
-		{
 			if (particule[j])			
 				if (particule[j]->rayon==DECOMPOSEE)
 				{
@@ -318,20 +314,16 @@ double particule_reallocation(int k , bool a)
 					particule[j] = NULL;
 					nb_particules--;
 				}
-		}
-		
-	}
 	return nb_particules;
 }
 
-STR_PARTICULE ** particule_desintegration(int i)
+STR_PARTICULE ** particule_desintegration(int i) //DESTRUCTION PARTICULE
 {
 	particule[i]->rayon=DECOMPOSEE;
 	particule[i]->ciblee = NON_CIBLEE;
 	return particule;
 }
-
-
+//FONCTION D'AFFECTATION
 STR_PARTICULE** particule_get_particules()
 {
 	return particule;

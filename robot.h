@@ -8,8 +8,6 @@
 #include "utilitaire.h"
 #include "constantes.h"
 #define INITIALISATION			0
-#define INIT_TOKEN_POS			25
-#define INIT_TOKEN_ALPHA		4
 #define NBR_COORDONNEES_R		8
 #define LIBRE					-1
 #define BLUE					2
@@ -21,6 +19,7 @@
 #define TRUTH					1
 #define FALSE					0
 #define REDUCTEUR				10
+#define OUT						21
 
 typedef struct Robot STR_ROBOT;
 struct Robot
@@ -46,10 +45,10 @@ STR_ROBOT ** robot_vrot(int i, double*angle);
 double robot_temps_rot_calcul(double*angle);
 double robot_vtran(double L);
 STR_ROBOT** robot_deplacement(S2D rob, int i);
-STR_ROBOT** robot_activation_desactivation(int i, bool a);
+STR_ROBOT** robot_activation_desactivation(int i, bool etat);
 STR_ROBOT ** robot_occupation(double x , double y, int i);
 STR_ROBOT** robot_color(int i, int color);
-S2D robot_alignement(S2D init, S2D rob, S2D cible, bool RP, double rayon, double angle);
+S2D robot_alignement(S2D init, S2D rob, S2D cible, bool rp, double rayon, double angle);
 STR_ROBOT** robot_recul(S2D rob, int i);
 STR_ROBOT** robot_manuel(double translat , double rotat, int i);
 STR_ROBOT** robot_get_robots();
