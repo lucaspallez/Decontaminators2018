@@ -213,6 +213,7 @@ STR_ROBOT** robot_vrot(int i, double*angle)//DEPLACEMENT DU ROBOT EN ROTATION
 			*vrot = -VROT_MAX;
 	}
 	robot[i]->angle = robot[i]->angle + *(vrot)*DELTA_T;
+	util_range_angle(&robot[i]->angle);
 	return robot;
 }
 
