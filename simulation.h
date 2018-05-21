@@ -23,7 +23,6 @@ int simulation_get_nb_robots();
 int simulation_get_nb_particules();
 STR_ROBOT** simulation_get_robots();
 STR_PARTICULE** simulation_get_particules();
-void simulation_deplacement(S2D rob, int i);
 void simulation_boucle(double translat , double rotat);
 int simulation_robot_collision_boucle(int i, bool rp, bool etat);
 void simulation_alignement(S2D rob,int i);

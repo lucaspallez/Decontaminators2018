@@ -175,7 +175,7 @@ bool particule_collision() //DETECTION COLLISION PARTICULES INITIALE
 			
 			double dist_x = fabs(x2-x1);
 			double dist_y = fabs (y2-y1);
-			if ( sqrt( dist_x*dist_x + dist_y*dist_y) < r1+r2)
+			if ( sqrt( dist_x*dist_x + dist_y*dist_y) < r1+r2 - EPSIL_ZERO)
 			{
 				error_collision(PARTICULE_PARTICULE, j+1 , j+k+1);
 				return 1;
