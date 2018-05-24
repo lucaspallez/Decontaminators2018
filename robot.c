@@ -66,7 +66,7 @@ double * robot_lecture_fichier(const char *file_name)
 			case DONNEES_R :  
 				while( *(tab + k) != '\n' && *(tab+k) != '\r')
 				{
-					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!= NBR_COORDONNEES_R-5)
+					if(sscanf(tab+k,"%lf %lf %lf",&xr,&yr,&alpha)!=NBR_COORDONNEES_R-5)
 						break;
 					if(fabs(alpha) > M_PI)
 					{
@@ -344,11 +344,11 @@ STR_ROBOT** robot_manuel(double translat , double rotat, int i)
 	double angle; //DEPLACEMENT MANUEL DU ROBOT
 	S2D init = {robot[i]->pos_x,robot[i]->pos_y};
 	angle = rotat*DELTA_T;
-	robot[i]->angle = 	robot[i]->angle + angle;
+	robot[i]->angle = robot[i]->angle + angle;
+	util_range_angle(&robot[i]->angle);
 	init = util_deplacement(init , robot[i]->angle , translat*DELTA_T);
 	robot_recul(init,i);
 	return robot;
-	
 }
 
 STR_ROBOT** robot_get_robots()

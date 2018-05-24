@@ -8,7 +8,6 @@ extern "C"
 }
 #include <GL/glui.h>
 
-
 #define WINDOW_SIZE			500
 #define STRLEN_E			5
 #define STRLEN_D			4
@@ -17,13 +16,10 @@ extern "C"
 #define STR_MAX				64
 #define LU					1
 #define NON_LU				0
-#define RUNNING				1
-#define NOT_RUNNING			0
 #define RED					1
 #define BLACK				0
-#define OPEN				1
-#define CLOSED				0
 #define AUTOMATIC			0
+#define PAS					0.25
 
 namespace
 {
@@ -39,7 +35,7 @@ namespace
 	float gray[3] = {0.7,0.7,0.7};
 	double energy_sum_init, energy_sum;
 	double rate = 0., v_trans = 0., v_rot = 0.;
-	bool sim_running = NOT_RUNNING, robot_selected = false, file_open = false;
+	bool sim_running = false, robot_selected = false, file_open = false;
 	STR_ROBOT **robot;
 	STR_PARTICULE ** particule;
 	S2D mouse;
@@ -73,12 +69,13 @@ void record_CB(int control)
 	if(recording)
 	{
 		out_ptr = fopen("out.dat", "w");
-		file_open = OPEN;
+		file_open = true;
 	}
 	else
 	{
-		fclose(out_ptr);
-		file_open = CLOSED;
+		if(file_open)
+			fclose(out_ptr);
+		file_open = false;
 	}
 }
 
@@ -102,7 +99,7 @@ void simulation(void)
 		
 	sprintf(str_rate, "Rate: %0.3lf", rate);
 	record_text_rate->set_text(str_rate);
-	if(recording)
+	if(recording && file_open)
 		fprintf(out_ptr, "%d %0.3lf\n", turn, rate);
 }
 
@@ -167,14 +164,14 @@ void idle(void)
 	if(sim_running && nb_particules != 0)	simulation();
 	if(nb_particules == 0)
 	{
-		sim_running = 0;
+		sim_running = false;
 		sim_start_button->set_name("Start");
 		if(recording)
 		{
 			if(file_open)
 			{
 				fclose(out_ptr);
-				file_open = CLOSED;
+				file_open = false;
 			}
 		}
 	}
@@ -183,6 +180,7 @@ void idle(void)
 
 void open_CB(int control)
 {
+	//Reinitialisation
 	turn = 0;
 	rate = 0;
 	sim_running = 0;
@@ -200,8 +198,7 @@ void open_CB(int control)
 			out_ptr = freopen("out.dat", "w", out_ptr);
 		else
 			out_ptr = fopen("out.dat", "w");
-	}
-		
+	}	
 }
 
 void save_CB(int control)
@@ -226,11 +223,11 @@ void save_CB(int control)
 void start_CB(int control)
 {
 	//START SIMMULATION
-	if(sim_running == NOT_RUNNING)
-		sim_running = RUNNING;
+	if(sim_running == false)
+		sim_running = true;
 	else
 	{
-		sim_running = NOT_RUNNING;
+		sim_running = false;
 		sim_start_button->set_name("Start");
 	}
 }
@@ -256,8 +253,8 @@ void mouse_CB(int mouse_button, int mouse_state, int abs_mouse_x, int abs_mouse_
 				double dist = util_distance(str_robot, mouse);
 				if(dist <= R_ROBOT)
 				{
-						robot[i]->color = RED;
-						robot_selected = true;
+					robot[i]->color = RED;
+					robot_selected = true;
 				}
 				else
 				{
@@ -281,22 +278,22 @@ void keyboard_CB(int key,int x, int y)
 		switch(key)
 		{
 		case GLUT_KEY_UP:
-			if(v_trans <= 0.5)	v_trans += 0.25;
+			if(v_trans < VTRAN_MAX)	v_trans += PAS;
 			sprintf(str_trans, "Translation: %.3lf", v_trans);
 			robot_text_trans->set_text(str_trans);
 			break;
 		case GLUT_KEY_DOWN:
-			if(v_trans >= -0.5)	v_trans -= 0.25;
+			if(v_trans > -VTRAN_MAX)	v_trans -= PAS;
 			sprintf(str_trans, "Translation: %.3lf", v_trans);
 			robot_text_trans->set_text(str_trans);
 			break;
 		case GLUT_KEY_LEFT:
-			if(v_rot <= 0.25)	v_rot += 0.25;
+			if(v_rot < VROT_MAX)	v_rot += PAS;
 			sprintf(str_rot, "Rotation:     %.3lf", v_rot);
 			robot_text_rot->set_text(str_rot);
 			break;
 		case GLUT_KEY_RIGHT:
-			if(v_rot >= -0.25)	v_rot -= 0.25;
+			if(v_rot > -VROT_MAX)	v_rot -= PAS;
 			sprintf(str_rot, "Rotation:     %.3lf", v_rot);
 			robot_text_rot->set_text(str_rot);
 			break;
